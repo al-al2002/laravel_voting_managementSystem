@@ -54,17 +54,18 @@ class DashboardController extends Controller
         // Reload user to reflect updated eligibility or admin override
         $user = $userModel->fresh();
 
-        return view('user.dashboard', [
-            'user' => $user,
-            'activeElectionsList' => $activeElectionsList,
-            'upcomingElectionsList' => $upcomingElectionsList,
-            'closedElectionsList' => $closedElectionsList,
-            'skippedElectionsList' => $skippedElectionsList,
-            'activeElections' => $activeElectionsList->count(),
-            'upcomingElections' => $upcomingElectionsList->count(),
-            'closedElections' => $closedElectionsList->count(),
-            'skippedElections' => $skippedCount,
-            'userVotesCount' => $user->votes()->count(),
-        ]);
+ return view('user.dashboard', [
+    'user' => $user,
+    'activeElectionsList' => $activeElectionsList,
+    'upcomingElectionsList' => $upcomingElectionsList,
+    'closedElectionsList' => $closedElectionsList,
+    'skippedElectionsList' => $skippedElectionsList,
+    'activeElections' => $activeElectionsList->count(),
+    'upcomingElections' => $upcomingElectionsList->count(),
+    'closedElections' => $closedElectionsList->count(),
+    'skippedElections' => $skippedCount,
+    'userVotesCount' => $user->votes()->pluck('election_id')->unique()->count(),
+]);
+
     }
 }
