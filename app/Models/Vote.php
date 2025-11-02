@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Vote extends Model
 {
@@ -15,27 +16,30 @@ class Vote extends Model
         'candidate_id',
     ];
 
-    /**
-     * The user who cast this vote.
-     */
+    /* Relationships */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * The election that this vote belongs to.
-     */
     public function election()
     {
         return $this->belongsTo(Election::class, 'election_id');
     }
 
-    /**
-     * The candidate that received this vote.
-     */
     public function candidate()
     {
         return $this->belongsTo(Candidate::class, 'candidate_id');
+    }
+
+    /* Booted Events */
+    protected static function booted()
+    {
+        // When a vote is deleted, refresh eligibility for the voter
+        static::deleted(function ($vote) {
+            if ($vote->user) {
+                $vote->user->refreshEligibility();
+            }
+        });
     }
 }

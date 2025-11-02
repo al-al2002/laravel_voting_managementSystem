@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\User;
 
 class Election extends Model
 {
@@ -23,7 +24,7 @@ class Election extends Model
         'end_date'   => 'datetime:Y-m-d H:i',
     ];
 
-    // Relationships
+    /* Relationships */
     public function candidates()
     {
         return $this->hasMany(Candidate::class);
@@ -34,7 +35,7 @@ class Election extends Model
         return $this->hasMany(Vote::class);
     }
 
-    // Status checks
+    /* Status Checks */
     public function isActive(): bool
     {
         $now = Carbon::now();
@@ -53,40 +54,35 @@ class Election extends Model
         return $this->end_date < $now;
     }
 
-    // 🏆 Winners (with tie support)
+    /* Winners */
     public function winners()
     {
-        // Only show winners for closed elections
-        if (!$this->isClosed()) {
-            return collect();
-        }
+        if (!$this->isClosed()) return collect();
 
-        // Get all candidates with their vote counts
-        $candidates = $this->candidates()
-            ->withCount('votes')
-            ->get();
+        $candidates = $this->candidates()->withCount('votes')->get();
+        if ($candidates->isEmpty()) return collect();
 
-        if ($candidates->isEmpty()) {
-            return collect();
-        }
-
-        // Get the highest number of votes
         $maxVotes = $candidates->max('votes_count');
-
-        // Return all candidates with the highest vote count (tie supported)
         return $candidates->where('votes_count', $maxVotes)->values();
     }
 
-    // 🪄 This allows $election->winners (no parentheses) to work
     public function getWinnersAttribute()
     {
         return $this->winners();
     }
 
-    // 🥇 Single winner (optional)
     public function winner()
     {
         $winners = $this->winners();
         return $winners->count() === 1 ? $winners->first() : null;
+    }
+
+    /* Booted Events */
+    protected static function booted()
+    {
+        // When an election is deleted, refresh eligibility of all voters
+        static::deleted(function ($election) {
+            User::where('role', 'voter')->get()->each->refreshEligibility();
+        });
     }
 }

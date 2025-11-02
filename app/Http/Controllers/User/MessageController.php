@@ -68,6 +68,20 @@ public function index()
             'image.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
+        // Prevent empty submissions: require at least text or an image
+        $hasMessage = !empty(trim((string) $request->message));
+        $hasImage = $request->hasFile('image');
+        if (! $hasMessage && ! $hasImage) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['message' => 'Please enter a message or attach an image.']
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors(['message' => 'Please enter a message or attach an image.'])->withInput();
+        }
+
         $userId = Auth::id();
         $conversationId = (string) Str::uuid();
 
@@ -78,7 +92,7 @@ public function index()
             }
         }
 
-        Message::create([
+        $msg = Message::create([
             'conversation_id' => $conversationId,
             'user_id' => $userId,
             'message' => $request->message ?? '',
@@ -87,6 +101,15 @@ public function index()
             'to' => 'admin',
             'sender_type' => 'user',
         ]);
+
+        // If request is AJAX, return JSON so the frontend can handle navigation without a full redirect
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'conversation_id' => $conversationId,
+                'message' => $msg,
+            ]);
+        }
 
         return redirect()
             ->route('user.messages.conversation', $conversationId)
@@ -129,6 +152,16 @@ public function index()
             'message' => 'nullable|string|max:1000',
             'image.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        // Prevent empty submissions on reply: require at least text or an image
+        $hasMessage = !empty(trim((string) $request->message));
+        $hasImage = $request->hasFile('image');
+        if (! $hasMessage && ! $hasImage) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['message' => 'Please enter a message or attach an image.']
+            ], 422);
+        }
 
         $userId = Auth::id();
         $imagePaths = [];

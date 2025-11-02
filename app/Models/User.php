@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Election;
 
 class User extends Authenticatable
 {
@@ -26,11 +27,7 @@ class User extends Authenticatable
         'eligibility_overridden' => 'boolean',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    /* Relationships */
     public function votes()
     {
         return $this->hasMany(Vote::class, 'user_id');
@@ -42,23 +39,18 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Skipped Elections Logic
-    |--------------------------------------------------------------------------
-    */
+    /* Skipped Elections Logic */
     public function skippedElections(): array
     {
-        $endedElections = Election::where('end_date', '>=', $this->created_at)
-            ->where('end_date', '<', now())
-            ->get();
+        // Elections that have ended after voter creation
+        $endedElections = Election::where('end_date', '>', $this->created_at)
+                                  ->where('end_date', '<=', now())
+                                  ->get();
 
         $skipped = [];
         foreach ($endedElections as $election) {
             $voted = $this->votes()->where('election_id', $election->id)->exists();
-            if (! $voted) {
-                $skipped[] = $election->title; // assuming 'title' column exists
-            }
+            if (!$voted) $skipped[] = $election->title;
         }
 
         return $skipped;
@@ -69,26 +61,55 @@ class User extends Authenticatable
         return count($this->skippedElections());
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Eligibility Logic
-    |--------------------------------------------------------------------------
-    */
-    public function isAutoFlagged(): bool
+    /* Eligibility Logic */
+
+    /**
+     * Calculate auto-eligibility based on skipped elections
+     */
+    public function isAutoEligible(): bool
     {
-        return $this->skippedElectionsCount() >= 5;
+        return $this->skippedElectionsCount() < 5;
     }
 
-    // Final eligibility (respects override first, then auto-flagging)
+    /**
+     * Final eligibility
+     */
     public function finalEligibility(): bool
     {
+        // Admin override takes priority
         if ($this->eligibility_overridden) {
             return $this->is_eligible;
         }
 
-        return ! $this->isAutoFlagged();
+        // Auto-eligibility logic
+        return $this->isAutoEligible();
     }
 
+    /**
+     * Refresh eligibility automatically
+     */
+    public function refreshEligibility(): void
+    {
+        // If admin override exists, respect it
+        if ($this->eligibility_overridden) {
+            // Only remove override if auto rules allow it
+            if ($this->isAutoEligible()) {
+                $this->eligibility_overridden = false;
+                $this->is_eligible = true;
+                $this->save();
+            }
+            return;
+        }
+
+        // No override: auto-adjust eligibility based on skipped elections
+        $autoEligible = $this->isAutoEligible();
+        if ($this->is_eligible !== $autoEligible) {
+            $this->is_eligible = $autoEligible;
+            $this->save();
+        }
+    }
+
+    /* Admin Override Methods */
     public function overrideEligibility(bool $status): void
     {
         $this->is_eligible = $status;
@@ -101,4 +122,28 @@ class User extends Authenticatable
         $this->eligibility_overridden = false;
         $this->save();
     }
+    // User.php
+
+
+public function skippedElectionsWithId(): array
+{
+    $endedElections = Election::where('end_date', '>', $this->created_at)
+                              ->where('end_date', '<=', now())
+                              ->get();
+
+    $skipped = [];
+
+    foreach ($endedElections as $election) {
+        $voted = $this->votes()->where('election_id', $election->id)->exists();
+        if (!$voted) {
+            $skipped[] = [
+                'id' => $election->id,
+                'title' => $election->title
+            ];
+        }
+    }
+
+    return $skipped;
+}
+
 }
