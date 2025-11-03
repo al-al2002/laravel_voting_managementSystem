@@ -55,6 +55,7 @@
     </style>
 </head>
 
+
 <body class="text-white">
 
     {{-- ✅ Skip header if the request is via AJAX (fetch) --}}
@@ -677,36 +678,38 @@
                         console.debug('closeBtn clicked');
                         e.preventDefault();
                         e.stopPropagation();
-                        // reload inbox list into dropdown
-                        try {
-                            inboxContent.innerHTML = '';
-                            showInboxLoader();
-                            const response = await fetch('{{ route('user.messages.index') }}', {
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                }
-                            });
-                            const html = await response.text();
+
+                        // Add fade-out animation
+                        inboxDropdown.classList.add('animate-fadeOut');
+
+                        // Wait for animation to finish
+                        setTimeout(async () => {
+                            inboxDropdown.classList.add('hidden');
+                            inboxDropdown.classList.remove('animate-fadeOut');
+
+                            // Reload inbox content (so when reopened, it’s fresh)
                             try {
+                                inboxContent.innerHTML = '';
+                                showInboxLoader();
+                                const response = await fetch('{{ route('user.messages.index') }}', {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                });
+                                const html = await response.text();
                                 const parser = new DOMParser();
                                 const parsed = parser.parseFromString(html, 'text/html');
                                 const frag = parsed.getElementById('inboxFragment');
                                 inboxContent.innerHTML = frag ? frag.innerHTML : parsed.body.innerHTML;
+                                attachInboxContentHandlers();
+                                await updateUnreadBadge();
                             } catch (err) {
-                                inboxContent.innerHTML = html;
+                                console.error('Failed to reload inbox', err);
                             }
-                            attachInboxContentHandlers();
-                            await updateUnreadBadge();
-                        } catch (err) {
-                            console.error('Failed to reload inbox', err);
-                            inboxDropdown.classList.add('animate-slideUp');
-                            setTimeout(() => {
-                                inboxDropdown.classList.add('hidden');
-                                inboxDropdown.classList.remove('animate-slideUp');
-                            }, 250);
-                        }
+                        }, 250); // match CSS animation duration
                         return;
                     }
+
                 });
 
                 // Delegate form submit inside inboxContent
@@ -724,14 +727,35 @@
                             'input[name="message"]');
                         const messageText = messageNode ? (messageNode.value || '').trim() : '';
                         const filesCount = (fileInputForPreview && (fileInputForPreview._selectedFiles ?
-                            fileInputForPreview._selectedFiles.length : (fileInputForPreview.files ?
-                                fileInputForPreview.files.length : 0))) || 0;
+                            fileInputForPreview._selectedFiles.length :
+                            (fileInputForPreview.files ? fileInputForPreview.files.length : 0))) || 0;
+
+                        // Remove previous error
+                        const container = messageNode.closest('div') || messageNode.parentNode;
+                        const existingError = container.querySelector('.inline-form-error');
+                        if (existingError) existingError.remove();
+
                         if (!messageText && filesCount === 0) {
-                            showFormError(form, 'Please enter a message');
+                            // Add small inline error under input
+                            const errorEl = document.createElement('p');
+                            errorEl.className = 'inline-form-error text-red-500 text-xs mt-1';
+                            errorEl.textContent = 'Please enter a message';
+                            container.appendChild(errorEl);
+
+                            // Highlight the input border temporarily
+                            messageNode.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+
+                            // Remove error and border after 2 seconds
+                            setTimeout(() => {
+                                errorEl.remove();
+                                messageNode.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                            }, 2000);
+
                             return;
+                        } else {
+                            // Remove red border if previously added
+                            messageNode.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
                         }
-                        // clear previous errors if any
-                        clearFormError(form);
                     } catch (err) {
                         console.debug('client-side validation failed', err);
                     }
@@ -1102,13 +1126,38 @@
         </script>
     @endif
 
-
     <main class="{{ request()->ajax() ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8' }}">
         @yield('content')
     </main>
 
     @yield('modals')
     @yield('scripts')
+
+    <!-- Fade-out Close Button Script -->
+    <script>
+        document.addEventListener("click", (e) => {
+            if (e.target && e.target.id === "closeInboxBtn") {
+                // Stop the click from bubbling up (so it won't trigger the open-inbox event)
+                e.stopPropagation();
+
+                const inboxDropdown = document.getElementById("inboxDropdown");
+
+                if (inboxDropdown) {
+                    // Smooth fade-out animation
+                    inboxDropdown.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                    inboxDropdown.style.opacity = "0";
+                    inboxDropdown.style.transform = "translateY(-10px)";
+
+                    // Hide fully after animation
+                    setTimeout(() => {
+                        inboxDropdown.classList.add("hidden");
+                        inboxDropdown.style.opacity = "";
+                        inboxDropdown.style.transform = "";
+                    }, 300);
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>
