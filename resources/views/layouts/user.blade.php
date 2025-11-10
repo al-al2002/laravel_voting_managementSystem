@@ -7,12 +7,16 @@
 
     $user = Auth::user();
 
-    // Only count unread messages that are not deleted by the user
-    $unreadCount = Message::where('user_id', $user->id)
-        ->where('to', 'user')
-        ->where('status', 'unread')
-        ->where('deleted_by_user', false)
-        ->count();
+    // Only count unread messages that are not deleted by the user.
+    // If user is not authenticated (guest), default to zero and avoid accessing properties on null.
+    $unreadCount = 0;
+    if ($user) {
+        $unreadCount = Message::where('user_id', $user->id)
+            ->where('to', 'user')
+            ->where('status', 'unread')
+            ->where('deleted_by_user', false)
+            ->count();
+    }
 @endphp
 
 
@@ -106,19 +110,19 @@
                     <div class="relative">
                         <button id="userMenuBtn" class="flex items-center space-x-2 focus:outline-none">
                             <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400">
-                                @if ($user->profile_photo)
+                                @if ($user && $user->profile_photo)
                                     <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile"
                                         class="w-full h-full object-cover">
                                 @else
                                     <div
                                         class="w-full h-full flex items-center justify-center bg-gray-600 text-white text-lg font-semibold">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        {{ $user ? strtoupper(substr($user->name, 0, 1)) : 'G' }}
                                     </div>
                                 @endif
                             </div>
                             <div class="hidden sm:block text-left">
-                                <span class="font-semibold block">{{ $user->name ?? 'Guest' }}</span>
-                                <span class="text-xs text-gray-400">ID: {{ $user->voter_id ?? 'N/A' }}</span>
+                                <span class="font-semibold block">{{ $user ? $user->name : 'Guest' }}</span>
+                                <span class="text-xs text-gray-400">ID: {{ $user ? $user->voter_id : 'N/A' }}</span>
                             </div>
                             <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -315,11 +319,11 @@
                 }
             }
 
-            // Show a small inline form error under the form
+            // Show a small validation state on the message input (red border only)
             function showFormError(form, text) {
                 try {
                     if (!form) return;
-                    // Clear any previous error state for this form first
+                    // Clear previous visual state first
                     clearFormError(form);
 
                     // Red border on the message input (textarea or input)
@@ -332,53 +336,18 @@
                         messageNode.dataset.hasValidationBorder = '1';
                     }
 
-                    // Small inline error element placed directly above the message input (small)
-                    const div = document.createElement('div');
-                    div.className = 'text-red-400 text-xs mb-1 form-error';
-                    div.style.lineHeight = '1';
-                    div.textContent = text;
-                    if (messageNode && messageNode.parentNode) {
-                        messageNode.parentNode.insertBefore(div, messageNode);
-                    } else {
-                        // fallback: place before submit button
-                        const btn = form.querySelector('button[type="submit"]');
-                        if (btn && btn.parentNode) {
-                            btn.parentNode.insertBefore(div, btn);
-                        } else {
-                            form.appendChild(div);
-                        }
-                    }
-
-                    // Transient toast inside the inbox for 3 seconds
+                    // Auto-clear the red border after 3 seconds
                     try {
-                        const toast = document.createElement('div');
-                        toast.className =
-                            'inbox-validation-toast absolute top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-3 py-1 rounded shadow-lg z-60';
-                        toast.style.pointerEvents = 'none';
-                        toast.textContent = text;
-                        const container = inboxContent || document.getElementById('inboxDropdown') || document.body;
-                        // ensure container is positioned relative so absolute works
-                        if (container && window.getComputedStyle(container).position === 'static') {
-                            container.style.position = 'relative';
-                        }
-                        container.appendChild(toast);
-
-                        // Clear after 3 seconds
                         const tid = setTimeout(() => {
                             try {
-                                if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
-                            } catch (e) {}
-                            try {
                                 clearFormError(form);
-                            } catch (e) {}
+                            } catch (e) {
+                                console.debug('error clearing validation', e);
+                            }
                         }, 3000);
-
-                        // Save timeout id on form so it can be cancelled if cleared earlier
-                        try {
-                            form._validationTimeout = tid;
-                        } catch (e) {}
+                        form._validationTimeout = tid;
                     } catch (e) {
-                        console.debug('failed to show transient toast', e);
+                        console.debug('failed to schedule validation clear', e);
                     }
                 } catch (err) {
                     console.debug('showFormError failed', err);

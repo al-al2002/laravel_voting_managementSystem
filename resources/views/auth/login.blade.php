@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoteMaster</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/votemaster.png') }}">
+
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -60,7 +62,7 @@
                     <input type="checkbox" name="remember" class="form-check-input" id="remember">
                     <label for="remember" class="form-check-label text-white">Remember me</label>
                 </div>
-                <a href="#" class="text-decoration-none">Forgot password?</a>
+                <a href="{{ route('password.request') }}" class="text-decoration-none">Forgot password?</a>
             </div>
 
             <button type="submit" class="btn btn-primary w-100">Sign In</button>

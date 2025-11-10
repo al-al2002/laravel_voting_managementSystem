@@ -45,6 +45,19 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Password reset (Forgot Password)
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+Route::get('/password/forgot', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/enter-code', [ForgotPasswordController::class, 'showEnterCodeForm'])->name('password.enter_code');
+Route::post('/password/check-code', [ForgotPasswordController::class, 'checkCode'])->name('password.check_code');
+Route::get('/password/set-new', [ForgotPasswordController::class, 'showSetNewForm'])->name('password.set_new');
+
+Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+
 // ----------------------
 // Admin Routes
 // ----------------------
