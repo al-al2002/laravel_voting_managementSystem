@@ -26,10 +26,11 @@
             $statusText = $user->is_eligible ? 'Eligible' : 'Not Eligible';
             $statusColor = $user->is_eligible ? 'bg-green-500' : 'bg-red-500';
         @endphp
-        <span
-            class="absolute top-0 right-0 mt-2 mr-2 px-3 py-1 rounded-full text-sm font-semibold text-white {{ $statusColor }}">
-            Voting Status: {{ $statusText }}
-        </span>
+        <div class="absolute top-0 right-0 mt-2 mr-2">
+            <span class="px-3 py-1 rounded-full text-sm font-semibold text-white {{ $statusColor }}">
+                Voting Status: {{ $statusText }}
+            </span>
+        </div>
     </div>
 
     {{-- Quick Stats Cards --}}

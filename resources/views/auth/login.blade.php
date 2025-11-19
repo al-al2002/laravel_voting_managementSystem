@@ -7,7 +7,6 @@
     <title>VoteMaster</title>
     <link rel="icon" type="image/png" href="{{ asset('images/votemaster.png') }}">
 
-
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -23,11 +22,10 @@
 </head>
 
 <body class="d-flex align-items-center justify-content-center vh-100 bg-dark">
-
     <div class="card shadow-lg rounded-4 border-0 p-4 position-relative w-100" style="max-width: 420px;">
         <div class="text-center mb-4">
             <h3 class="fw-bold text-primary text-white">VoteMaster</h3>
-            <p class=" text-white">Voting Management System</p>
+            <p class="text-white">Voting Management System</p>
         </div>
 
         <!-- Nav Tabs -->
@@ -104,13 +102,40 @@
 
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="agree" name="agree" required>
-                <label class="form-check-label" for="agree">
-                    I agree to the <a href="#" class="text-info">terms and conditions</a>
+                <label class="form-check-label text-white" for="agree">
+                    I agree to the <a href="#" class="text-info" data-bs-toggle="modal"
+                        data-bs-target="#termsModal">VoteMaster Voting Management System Terms &amp; Conditions</a>
                 </label>
             </div>
 
             <button type="submit" class="btn btn-success w-100">Create Account</button>
         </form>
+    </div>
+
+    <!-- Terms modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border border-info">
+                <div class="modal-header border-bottom border-info">
+                    <h5 class="modal-title" id="termsModalLabel">VoteMaster Voting Management System Terms</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>By using VoteMaster, you agree to follow the election integrity, accuracy, and privacy standards
+                        we maintain throughout the voting lifecycle.</p>
+                    <ul>
+                        <li>Only registered voters may create an account and cast ballots.</li>
+                        <li>Voting data is secured and treated in accordance with our privacy policies.</li>
+                        <li>Abusive behavior or manipulation of votes will result in account suspension.</li>
+                    </ul>
+                    <p>Please reach out to the voting administration team if you need any clarifications.</p>
+                </div>
+                <div class="modal-footer border-top border-info">
+                    <button type="button" class="btn btn-outline-info" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Error + Success handling -->
@@ -129,11 +154,20 @@
         }
 
         if (window.sessionSuccess) {
-            Swal.fire("Success", window.sessionSuccess, "success");
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: window.sessionSuccess,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
         }
     </script>
 
-    <!-- Custom JS -->
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
 </body>
 

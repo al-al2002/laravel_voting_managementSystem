@@ -13,6 +13,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
         if (!$user) {
@@ -52,20 +53,20 @@ class DashboardController extends Controller
         }
 
         // Reload user to reflect updated eligibility or admin override
-        $user = $userModel->fresh();
+        $user = $userModel ? $userModel->fresh() : $user;
 
- return view('user.dashboard', [
-    'user' => $user,
-    'activeElectionsList' => $activeElectionsList,
-    'upcomingElectionsList' => $upcomingElectionsList,
-    'closedElectionsList' => $closedElectionsList,
-    'skippedElectionsList' => $skippedElectionsList,
-    'activeElections' => $activeElectionsList->count(),
-    'upcomingElections' => $upcomingElectionsList->count(),
-    'closedElections' => $closedElectionsList->count(),
-    'skippedElections' => $skippedCount,
-    'userVotesCount' => $user->votes()->pluck('election_id')->unique()->count(),
-]);
+        return view('user.dashboard', [
+            'user' => $user,
+            'activeElectionsList' => $activeElectionsList,
+            'upcomingElectionsList' => $upcomingElectionsList,
+            'closedElectionsList' => $closedElectionsList,
+            'skippedElectionsList' => $skippedElectionsList,
+            'activeElections' => $activeElectionsList->count(),
+            'upcomingElections' => $upcomingElectionsList->count(),
+            'closedElections' => $closedElectionsList->count(),
+            'skippedElections' => $skippedCount,
+            'userVotesCount' => $user->votes()->pluck('election_id')->unique()->count(),
+        ]);
 
     }
 }
