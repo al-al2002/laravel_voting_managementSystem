@@ -11,11 +11,21 @@ use Illuminate\Auth\Events\PasswordReset;
 
 class ResetPasswordController extends Controller
 {
-    public function showResetForm($token = null)
+    /**
+     * Show the password reset form
+     */
+    public function showResetForm(Request $request, $token = null)
     {
-        return view('auth.passwords.reset', ['token' => $token]);
+        // Ensure token and email are passed
+        return view('auth.passwords.reset', [
+            'token' => $token,
+            'email' => $request->email,
+        ]);
     }
 
+    /**
+     * Handle the password reset
+     */
     public function reset(Request $request)
     {
         $request->validate([
@@ -24,9 +34,10 @@ class ResetPasswordController extends Controller
             'password' => 'required|confirmed|min:6',
         ]);
 
+        // Attempt to reset the password
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) use ($request) {
+            function ($user, $password) {
                 $user->password = Hash::make($password);
                 $user->setRememberToken(Str::random(60));
                 $user->save();
@@ -34,15 +45,16 @@ class ResetPasswordController extends Controller
             }
         );
 
+        // Handle AJAX requests
         if ($request->wantsJson() || $request->ajax()) {
-            if ($status === Password::PASSWORD_RESET) {
-                return response()->json(['status' => __($status)], 200);
-            }
-            return response()->json(['email' => __($status)], 422);
+            return $status === Password::PASSWORD_RESET
+                ? response()->json(['status' => __($status)], 200)
+                : response()->json(['email' => __($status)], 422);
         }
 
+        // Handle normal form submission
         return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('status', __($status))
+            ? redirect()->route('login')->with('success', __('Your password has been reset!'))
             : back()->withErrors(['email' => [__($status)]]);
     }
 }

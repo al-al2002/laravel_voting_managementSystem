@@ -45,15 +45,14 @@
             @csrf
             <div class="mb-3 position-relative">
                 <input type="text" name="login" class="form-control ps-5" placeholder="Voter ID or Email" required>
-                <i class="bi bi-card-text position-absolute"
-                    style="top:50%; left:15px; transform:translateY(-50%);"></i>
+                <i class="bi bi-card-text position-absolute input-leading-icon"></i>
             </div>
 
             <div class="mb-3 position-relative">
                 <input id="loginPassword" type="password" name="password" class="form-control ps-5 pe-5"
                     placeholder="Enter your password" required>
-                <i class="bi bi-lock position-absolute" style="top:50%; left:15px; transform:translateY(-50%);"></i>
-                <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3" style="cursor:pointer;"
+                <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                <i class="bi bi-eye position-absolute input-trailing-icon"
                     onclick="togglePassword('loginPassword', this)"></i>
             </div>
 
@@ -90,16 +89,16 @@
             <div class="mb-3 position-relative">
                 <input id="registerPassword" type="password" name="password" class="form-control ps-5 pe-5"
                     placeholder="Create password" required>
-                <i class="bi bi-lock position-absolute" style="top:50%; left:15px; transform:translateY(-50%);"></i>
-                <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3" style="cursor:pointer;"
+                <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                <i class="bi bi-eye position-absolute input-trailing-icon"
                     onclick="togglePassword('registerPassword', this)"></i>
             </div>
 
             <div class="mb-3 position-relative">
                 <input id="registerConfirmPassword" type="password" name="password_confirmation"
                     class="form-control ps-5 pe-5" placeholder="Confirm password" required>
-                <i class="bi bi-lock position-absolute" style="top:50%; left:15px; transform:translateY(-50%);"></i>
-                <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3" style="cursor:pointer;"
+                <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                <i class="bi bi-eye position-absolute input-trailing-icon"
                     onclick="togglePassword('registerConfirmPassword', this)"></i>
             </div>
 

@@ -33,6 +33,17 @@ input.form-control {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(0, 255, 255, 0.4);
     color: #fff;
+    position: relative;
+    z-index: 1;
+    padding-left: 46px;
+}
+
+.form-control.ps-5 {
+    padding-left: 46px;
+}
+
+.form-control.pe-5 {
+    padding-right: 46px;
 }
 
 input.form-control:focus {
@@ -48,6 +59,25 @@ input.form-control:focus {
 
 .position-absolute {
     color: #00eaff !important;
+}
+
+.input-leading-icon,
+.input-trailing-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    z-index: 2;
+    color: #00eaff !important;
+}
+
+.input-leading-icon {
+    left: 18px;
+}
+
+.input-trailing-icon {
+    right: 18px;
+    cursor: pointer;
 }
 
 /* === Nav Tabs === */
@@ -108,3 +138,4 @@ a:hover {
     border: 1px solid #00eaff;
     border-radius: 12px;
 }
+

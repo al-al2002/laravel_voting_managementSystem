@@ -10,7 +10,8 @@
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
 
     <!-- Custom CSS -->
     <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
@@ -42,22 +43,42 @@
 
         <form method="POST" action="{{ route('password.update') }}">
             @csrf
+
+            <!-- Pass token -->
             <input type="hidden" name="token" value="{{ $token }}">
 
-            <div class="mb-3 position-relative">
+            <!-- Email field -->
+            <div class="mb-3">
                 <label class="form-label text-white">Email address</label>
-                <input type="email" name="email" required value="{{ old('email') }}" class="form-control"
-                    placeholder="you@example.com">
+                <div class="position-relative">
+                    <input type="email" name="email" required value="{{ $email ?? old('email') }}"
+                        class="form-control ps-5" placeholder="you@example.com" readonly tabindex="-1">
+                    <i class="bi bi-envelope position-absolute input-leading-icon"></i>
+                </div>
             </div>
 
-            <div class="mb-3 position-relative">
+            <!-- New password -->
+            <div class="mb-3">
                 <label class="form-label text-white">New password</label>
-                <input type="password" name="password" required class="form-control">
+                <div class="position-relative">
+                    <input id="resetPassword" type="password" name="password" required class="form-control ps-5 pe-5"
+                        placeholder="Enter new password">
+                    <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                    <i class="bi bi-eye position-absolute input-trailing-icon"
+                        onclick="togglePassword('resetPassword', this)"></i>
+                </div>
             </div>
 
-            <div class="mb-3 position-relative">
+            <!-- Confirm password -->
+            <div class="mb-3">
                 <label class="form-label text-white">Confirm password</label>
-                <input type="password" name="password_confirmation" required class="form-control">
+                <div class="position-relative">
+                    <input id="resetPasswordConfirmation" type="password" name="password_confirmation" required
+                        class="form-control ps-5 pe-5" placeholder="Re-enter password">
+                    <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                    <i class="bi bi-eye position-absolute input-trailing-icon"
+                        onclick="togglePassword('resetPasswordConfirmation', this)"></i>
+                </div>
             </div>
 
             <div class="mt-4 d-flex justify-content-end">
@@ -65,8 +86,10 @@
                 <button type="submit" class="btn btn-primary">Reset password</button>
             </div>
         </form>
+
     </div>
 
+    <script src="{{ asset('js/auth.js') }}"></script>
     <!-- Error + Success handling -->
     <script>
         window.errors = {!! $errors->any() ? json_encode($errors->all()) : '[]' !!};

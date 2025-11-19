@@ -15,6 +15,9 @@
     <!-- Custom CSS -->
     <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
 
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body class="d-flex align-items-center justify-content-center vh-100 bg-dark">
@@ -34,28 +37,60 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('password.update') }}">
+        <form method="POST" action="{{ route('password.set_new.update') }}">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
             <div class="mb-3">
                 <label class="form-label text-white">Email</label>
-                <input type="email" name="email" value="{{ $email }}" required class="form-control">
+                <div class="position-relative">
+                    <input type="email" name="email" value="{{ $email }}" required class="form-control ps-5"
+                        placeholder="you@example.com" readonly tabindex="-1">
+                    <i class="bi bi-envelope position-absolute input-leading-icon"></i>
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label text-white">New password</label>
-                <input type="password" name="password" required class="form-control">
+                <div class="position-relative">
+                    <input id="setNewPassword" type="password" name="password" required class="form-control ps-5 pe-5"
+                        placeholder="Enter new password">
+                    <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                    <i class="bi bi-eye position-absolute input-trailing-icon"
+                        onclick="togglePassword('setNewPassword', this)"></i>
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label text-white">Confirm new password</label>
-                <input type="password" name="password_confirmation" required class="form-control">
+                <div class="position-relative">
+                    <input id="setNewPasswordConfirm" type="password" name="password_confirmation" required
+                        class="form-control ps-5 pe-5" placeholder="Confirm password">
+                    <i class="bi bi-lock position-absolute input-leading-icon"></i>
+                    <i class="bi bi-eye position-absolute input-trailing-icon"
+                        onclick="togglePassword('setNewPasswordConfirm', this)"></i>
+                </div>
             </div>
 
-            <div class="d-flex justify-content-end">
-                <a href="{{ route('login') }}" class="text-info mr-auto">Back to login</a>
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <a href="{{ route('login') }}" class="text-info">Back to login</a>
                 <button type="submit" class="btn btn-primary">Set new password</button>
             </div>
         </form>
     </div>
+
+    <script src="{{ asset('js/auth.js') }}"></script>
+    <script>
+        window.sessionSuccess = "{{ session('success') ?? '' }}";
+        if (window.sessionSuccess) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: window.sessionSuccess,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        }
+    </script>
 </body>
 
 </html>

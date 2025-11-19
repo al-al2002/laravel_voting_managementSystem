@@ -46,14 +46,17 @@
 
         <form method="POST" action="{{ route('password.email') }}">
             @csrf
-            <div class="mb-3 position-relative">
+            <div class="mb-3">
                 <label class="form-label text-white">Email address</label>
-                <input type="email" name="email" required value="{{ old('email') }}" class="form-control"
-                    placeholder="you@example.com">
+                <div class="position-relative">
+                    <input type="email" name="email" required value="{{ old('email') }}" class="form-control ps-5"
+                        placeholder="you@example.com">
+                    <i class="bi bi-envelope position-absolute input-leading-icon"></i>
+                </div>
             </div>
 
-            <div class="mt-4 d-flex justify-content-end">
-                <a href="{{ route('login') }}" class="text-sm text-info mr-auto">Back to login</a>
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <a href="{{ route('login') }}" class="text-sm text-info">Back to login</a>
                 <button type="submit" class="btn btn-primary">Send code</button>
             </div>
         </form>

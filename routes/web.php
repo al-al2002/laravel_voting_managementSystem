@@ -53,7 +53,9 @@ Route::get('/password/forgot', [ForgotPasswordController::class, 'showLinkReques
 Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/password/enter-code', [ForgotPasswordController::class, 'showEnterCodeForm'])->name('password.enter_code');
 Route::post('/password/check-code', [ForgotPasswordController::class, 'checkCode'])->name('password.check_code');
+Route::post('/password/resend', [ForgotPasswordController::class, 'resendCode'])->name('password.resend');
 Route::get('/password/set-new', [ForgotPasswordController::class, 'showSetNewForm'])->name('password.set_new');
+Route::post('/password/set-new', [ForgotPasswordController::class, 'updatePassword'])->name('password.set_new.update');
 
 Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
