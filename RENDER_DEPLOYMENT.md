@@ -1,6 +1,7 @@
 # Render Deployment Guide for Laravel Voting System
 
 ## Prerequisites
+
 1. GitHub repository with your code
 2. Render account (free tier)
 3. Supabase account with your uploads bucket configured
@@ -9,15 +10,16 @@
 
 After creating your web service, go to **Environment** tab and add these:
 
-### Required Variables:
-```
+### Required Variables
+
+```env
 APP_NAME=VoteMaster
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-app-name.onrender.com
 
 DB_CONNECTION=mysql
-(Database variables will auto-populate when you connect a database)
+# Database variables will auto-populate when you connect a database
 
 SESSION_DRIVER=database
 CACHE_STORE=database
@@ -39,6 +41,7 @@ SUPABASE_BUCKET=uploads
 ## Deployment Steps
 
 ### 1. Push your code to GitHub
+
 ```bash
 git add .
 git commit -m "Prepare for Render deployment with Supabase"
@@ -46,7 +49,8 @@ git push origin main
 ```
 
 ### 2. Create Web Service on Render
-1. Go to https://render.com/dashboard
+
+1. Go to <https://render.com/dashboard>
 2. Click **New +** → **Web Service**
 3. Connect your GitHub repository
 4. Configure:
@@ -56,15 +60,18 @@ git push origin main
    - **Docker Command**: Leave empty (uses Dockerfile CMD)
 
 ### 3. Add MySQL Database (Free)
+
 1. In Render Dashboard, click **New +** → **PostgreSQL** (Free tier)
    OR use **PlanetScale** or **Railway** for MySQL
 2. Connect it to your web service
 3. Database environment variables will auto-populate
 
 ### 4. Set Environment Variables
+
 Copy all the variables listed above into Render's Environment tab
 
 ### 5. Deploy
+
 - Render will automatically build and deploy
 - First deployment takes 5-10 minutes
 - Watch the logs for any errors
@@ -72,6 +79,7 @@ Copy all the variables listed above into Render's Environment tab
 ## Post-Deployment Checklist
 
 ✅ **Test Features:**
+
 1. Register/Login
 2. Upload profile photo (should save to Supabase)
 3. Create candidate with photo (should save to Supabase)
@@ -80,6 +88,7 @@ Copy all the variables listed above into Render's Environment tab
 6. Test forgot password email
 
 ✅ **Verify Supabase Storage:**
+
 - Check `uploads` bucket for:
   - `profile-photos/`
   - `candidates/`
@@ -88,20 +97,24 @@ Copy all the variables listed above into Render's Environment tab
 
 ## Troubleshooting
 
-### Images not displaying:
+### Images not displaying
+
 - Verify SUPABASE_URL and SUPABASE_KEY are set correctly
 - Check Supabase bucket policy allows public access
 - Verify files exist in Supabase Storage dashboard
 
-### PDF downloads failing:
+### PDF downloads failing
+
 - Check Laravel logs in Render dashboard
 - Verify APP_KEY is generated (run `php artisan key:generate`)
 
-### Emails not sending:
+### Emails not sending
+
 - Verify Gmail app password is correct
 - Check MAIL_* variables are set
 
-### Database errors:
+### Database errors
+
 - Ensure migrations ran successfully
 - Check database connection variables
 - Look at build logs for migration errors
@@ -120,7 +133,9 @@ If you want fully automated deployment, the `render.yaml` file is included.
 Just push to GitHub and click "Deploy with Blueprint" in Render dashboard.
 
 ## Support
+
 If deployment fails, check:
+
 1. Render build logs
 2. Laravel logs (via Render dashboard)
 3. Supabase dashboard for storage issues
