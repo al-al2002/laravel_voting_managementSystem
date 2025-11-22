@@ -65,19 +65,19 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-
-
-
+# Create startup script
+RUN echo '#!/bin/bash\n\
+    php artisan queue:work --daemon &\n\
+    apache2-foreground' > /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
 
 # Expose Render's required port
 
 EXPOSE 10000
 
+# Start Apache with queue worker
 
-
-# Start Apache
-
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start.sh"]
 
 
 

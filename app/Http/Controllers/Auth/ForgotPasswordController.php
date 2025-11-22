@@ -28,16 +28,24 @@ class ForgotPasswordController extends Controller
         $email = $request->input('email');
         $code = $this->storeVerificationCode($email);
 
+        // Set timeout for mail sending
+        set_time_limit(30);
+
         try {
-            Mail::to($email)->send(new PasswordResetCode($code));
+            // Send email asynchronously to avoid blocking
+            Mail::to($email)->queue(new PasswordResetCode($code));
+
+            // Log for debugging
+            Log::info("Password reset code queued for {$email}: {$code}");
         } catch (\Exception $e) {
             report($e);
+            Log::error("Failed to queue password reset email for {$email}: " . $e->getMessage());
             Log::info("Password reset code for {$email}: {$code}");
 
             if ($this->shouldShowDebugCode() || app()->environment('local')) {
                 return redirect()->route('password.enter_code')
                     ->with('email', $email)
-                    ->with('status', "Verification code logged for {$email}. Check storage/logs/laravel.log or your mail log.")
+                    ->with('status', "Verification code: {$code} (Email failed to send)")
                     ->with('debug_code', $code)
                     ->with('show_debug_code', true);
             }
