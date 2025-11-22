@@ -12,36 +12,37 @@
         </a>
 
         {{-- Filter --}}
-    <form method="GET" action="{{ route('admin.candidates.index') }}">
-        <select name="status" onchange="this.form.submit()"
-            class="border border-[#09182D] rounded-lg px-3 py-2 text-[#09182D]">
-            <option value="" {{ request('status') === null || request('status') === '' ? 'selected' : '' }}>All Status</option>
-            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
-            <option value="upcoming" {{ request('status') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
-            <option value="closed" {{ request('status') === 'closed' ? 'selected' : '' }}>Closed</option>
-        </select>
-    </form>
+        <form method="GET" action="{{ route('admin.candidates.index') }}">
+            <select name="status" onchange="this.form.submit()"
+                class="border border-[#09182D] rounded-lg px-3 py-2 text-[#09182D]">
+                <option value="" {{ request('status') === null || request('status') === '' ? 'selected' : '' }}>All
+                    Status</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                <option value="upcoming" {{ request('status') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                <option value="closed" {{ request('status') === 'closed' ? 'selected' : '' }}>Closed</option>
+            </select>
+        </form>
 
     </div>
 
-    @if($elections->count() > 0)
+    @if ($elections->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($elections as $election)
+            @foreach ($elections as $election)
                 @php
-        $now = \Carbon\Carbon::now();
-        if ($election->start_date > $now) {
-            $statusClass = 'bg-yellow-200 text-yellow-800';
-            $statusText = 'Upcoming';
-            $editable = true;
-        } elseif ($election->end_date < $now) {
-            $statusClass = 'bg-red-200 text-red-800';
-            $statusText = 'Closed';
-            $editable = false;
-        } else {
-            $statusClass = 'bg-green-200 text-green-800';
-            $statusText = 'Active';
-            $editable = true;
-        }
+                    $now = \Carbon\Carbon::now();
+                    if ($election->start_date > $now) {
+                        $statusClass = 'bg-yellow-200 text-yellow-800';
+                        $statusText = 'Upcoming';
+                        $editable = true;
+                    } elseif ($election->end_date < $now) {
+                        $statusClass = 'bg-red-200 text-red-800';
+                        $statusText = 'Closed';
+                        $editable = false;
+                    } else {
+                        $statusClass = 'bg-green-200 text-green-800';
+                        $statusText = 'Active';
+                        $editable = true;
+                    }
                 @endphp
 
                 <div
@@ -60,11 +61,12 @@
                         @forelse($election->candidates as $candidate)
                             <li class="flex items-center justify-between p-2 bg-gray-50 rounded-lg shadow-sm">
                                 <div class="flex items-center gap-3">
-                                    @if($candidate->photo)
-                                        <img src="{{ asset('storage/' . $candidate->photo) }}" alt="{{ $candidate->name }}"
-                                            class="w-10 h-10 rounded-full object-cover">
+                                    @if ($candidate->photo)
+                                        <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
+                                            alt="{{ $candidate->name }}" class="w-10 h-10 rounded-full object-cover">
                                     @else
-                                        <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-500">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-500">
                                             N/A
                                         </div>
                                     @endif
@@ -74,15 +76,15 @@
                                     </div>
                                 </div>
 
-                                @if($editable)
+                                @if ($editable)
                                     <div class="flex gap-2">
                                         <a href="{{ route('admin.candidates.edit', $candidate->id) }}"
                                             class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition">
                                             Edit
                                         </a>
 
-                                        <form action="{{ route('admin.candidates.destroy', $candidate->id) }}" method="POST"
-                                            class="delete-form">
+                                        <form action="{{ route('admin.candidates.destroy', $candidate->id) }}"
+                                            method="POST" class="delete-form">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -109,7 +111,7 @@
     <script>
         // Delete confirmation
         document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 Swal.fire({
                     title: 'Are you sure?',
@@ -127,8 +129,8 @@
         });
 
         // Show success/error toast
-        document.addEventListener('DOMContentLoaded', function () {
-            @if(session('success'))
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
                 Swal.fire({
                     icon: 'success',
                     title: 'Success!',
@@ -140,7 +142,7 @@
                 });
             @endif
 
-            @if(session('error'))
+            @if (session('error'))
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',

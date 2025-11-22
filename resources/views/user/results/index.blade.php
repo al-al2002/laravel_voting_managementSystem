@@ -39,7 +39,7 @@
                     $grouped = $election->candidates->groupBy('position');
                 @endphp
 
-                @foreach($grouped as $position => $candidates)
+                @foreach ($grouped as $position => $candidates)
                     @php
                         $maxVotes = $candidates->max('votes_count');
                         $winners = $candidates->where('votes_count', $maxVotes);
@@ -50,8 +50,9 @@
                         {{ $winners->count() > 1 ? '(Tie)' : '' }}:
                     </p>
                     <ul class="list-disc list-inside text-yellow-300 font-semibold mb-3">
-                        @foreach($winners as $winner)
-                            <li>🎉 {{ $winner->name }} — {{ $winner->votes_count }} vote{{ $winner->votes_count > 1 ? 's' : '' }}</li>
+                        @foreach ($winners as $winner)
+                            <li>🎉 {{ $winner->name }} — {{ $winner->votes_count }}
+                                vote{{ $winner->votes_count > 1 ? 's' : '' }}</li>
                         @endforeach
                     </ul>
                 @endforeach
@@ -68,12 +69,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($election->candidates as $candidate)
-                            <tr @if($candidate->votes_count == $grouped[$candidate->position]->max('votes_count'))
-                            class="bg-yellow-900 font-bold" @endif>
+                        @foreach ($election->candidates as $candidate)
+                            <tr @if ($candidate->votes_count == $grouped[$candidate->position]->max('votes_count')) class="bg-yellow-900 font-bold" @endif>
                                 <td class="px-4 py-2 border border-gray-700">
-                                    @if($candidate->photo)
-                                        <img src="{{ asset('storage/' . $candidate->photo) }}"
+                                    @if ($candidate->photo)
+                                        <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
                                             class="w-12 h-12 rounded-full object-cover">
                                     @else
                                         <span class="text-gray-400">No photo</span>

@@ -60,7 +60,7 @@ class SmsController extends Controller
         $images = [];
         if ($request->hasFile('image')) {
             foreach ($request->file('image') as $file) {
-                $images[] = $file->store('messages', 'public');
+                $images[] = $file->store('messages', 'supabase');
             }
         }
 
@@ -92,8 +92,10 @@ class SmsController extends Controller
             if ($message->image) {
                 $images = json_decode($message->image, true);
                 foreach ($images as $img) {
-                    if (Storage::disk('public')->exists($img)) {
-                        Storage::disk('public')->delete($img);
+                    try {
+                        Storage::disk('supabase')->delete($img);
+                    } catch (\Exception $e) {
+                        // File doesn't exist or deletion failed, continue
                     }
                 }
             }

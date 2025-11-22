@@ -40,7 +40,7 @@
                                     <td class="px-4 py-2">{{ $voter->voter_id }}</td>
                                     <td class="px-4 py-2 flex items-center gap-3">
                                         @if ($voter->profile_photo)
-                                            <img src="{{ asset('storage/' . $voter->profile_photo) }}"
+                                            <img src="{{ $voter->profile_photo_url ?? asset('images/default-avatar.png') }}"
                                                 alt="{{ $voter->name }}'s photo"
                                                 class="w-10 h-10 rounded-full object-cover border border-gray-300">
                                         @else
@@ -118,10 +118,10 @@
         <div style="max-height: 300px; overflow-y: auto; text-align: left; padding-right: 5px;">
             <ul class="space-y-2">
                 ${elections.map(e => `
-                                    <li class="p-2 bg-gray-50 rounded border">
-                                        <a href="/admin/elections/${e.id}" class="text-blue-600 hover:underline">${e.title}</a>
-                                    </li>
-                                `).join('')}
+                                        <li class="p-2 bg-gray-50 rounded border">
+                                            <a href="/admin/elections/${e.id}" class="text-blue-600 hover:underline">${e.title}</a>
+                                        </li>
+                                    `).join('')}
             </ul>
         </div>
     `,

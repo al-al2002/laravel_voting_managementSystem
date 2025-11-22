@@ -111,8 +111,8 @@
                         <button id="userMenuBtn" class="flex items-center space-x-2 focus:outline-none">
                             <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-yellow-400">
                                 @if ($user && $user->profile_photo)
-                                    <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Profile"
-                                        class="w-full h-full object-cover">
+                                    <img src="{{ $user->profile_photo_url ?? asset('images/default-avatar.png') }}"
+                                        alt="Profile" class="w-full h-full object-cover">
                                 @else
                                     <div
                                         class="w-full h-full flex items-center justify-center bg-gray-600 text-white text-lg font-semibold">
@@ -458,10 +458,14 @@
                     // build images html
                     let imagesHTML = '';
                     try {
-                        const images = msg.image ? JSON.parse(msg.image) : [];
+                        // Use image_urls accessor if available (Supabase URLs), otherwise fallback to local storage
+                        const images = msg.image_urls && Array.isArray(msg.image_urls) && msg.image_urls.length > 0 ?
+                            msg.image_urls :
+                            (msg.image ? JSON.parse(msg.image).map(img => `/storage/${img}`) : []);
+
                         if (Array.isArray(images) && images.length > 0) {
-                            imagesHTML = '<div class="flex flex-wrap gap-2 mt-1">' + images.map(img =>
-                                `<img src="/storage/${img}" class="rounded-lg max-w-full">`).join('') + '</div>';
+                            imagesHTML = '<div class="flex flex-wrap gap-2 mt-1">' + images.map(imgUrl =>
+                                `<img src="${imgUrl}" class="rounded-lg max-w-full">`).join('') + '</div>';
                         }
                     } catch (e) {
                         imagesHTML = '';

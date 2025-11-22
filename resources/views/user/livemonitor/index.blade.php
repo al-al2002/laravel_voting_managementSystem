@@ -25,7 +25,7 @@
                     $groupedCandidates = $election->candidates->groupBy('position');
                 @endphp
 
-                @foreach($groupedCandidates as $position => $candidates)
+                @foreach ($groupedCandidates as $position => $candidates)
                     {{-- Position Header --}}
                     <h2 class="text-xl font-bold text-blue-400 mb-3 mt-6 border-b border-gray-600 pb-1">
                         {{ ucfirst($position) ?? 'Unknown Position' }}
@@ -37,13 +37,14 @@
                     @endphp
 
                     <ul class="space-y-2">
-                        @foreach($sortedCandidates as $candidate)
+                        @foreach ($sortedCandidates as $candidate)
                             <li
                                 class="flex justify-between items-center p-3 border border-gray-600 rounded-lg bg-[#09182D] hover:bg-[#0f2445] transition">
                                 <div class="flex items-center space-x-3">
                                     {{-- Candidate Photo --}}
-                                    @if($candidate->photo)
-                                        <img src="{{ asset('storage/' . $candidate->photo) }}" alt="{{ $candidate->name }}"
+                                    @if ($candidate->photo)
+                                        <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
+                                            alt="{{ $candidate->name }}"
                                             class="w-10 h-10 rounded-full object-cover border-2 border-gray-500">
                                     @else
                                         <div

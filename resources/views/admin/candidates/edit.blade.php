@@ -28,7 +28,7 @@
         <div>
             <label class="block font-medium mb-1">Election</label>
             <select name="election_id" class="w-full border rounded-lg px-3 py-2" required>
-                @foreach($elections as $election)
+                @foreach ($elections as $election)
                     <option value="{{ $election->id }}" {{ $candidate->election_id == $election->id ? 'selected' : '' }}>
                         {{ $election->title }}
                     </option>
@@ -39,8 +39,9 @@
         {{-- Photo --}}
         <div>
             <label class="block font-medium mb-1">Photo</label>
-            @if($candidate->photo)
-                <img src="{{ asset('storage/' . $candidate->photo) }}" class="w-20 h-20 rounded-full object-cover mb-2">
+            @if ($candidate->photo)
+                <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
+                    class="w-20 h-20 rounded-full object-cover mb-2">
             @endif
             <input type="file" name="photo" accept="image/*" class="w-full border rounded-lg px-3 py-2">
             <p class="text-gray-500 text-sm mt-1">Leave blank if you don’t want to change the photo.</p>

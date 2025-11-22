@@ -33,7 +33,7 @@
                     $groupedByPosition = $election->candidates->groupBy('position');
                 @endphp
 
-                @foreach($groupedByPosition as $position => $candidates)
+                @foreach ($groupedByPosition as $position => $candidates)
                     @php
                         $maxVotes = $candidates->max('votes_count');
                         $winners = $candidates->where('votes_count', $maxVotes);
@@ -46,7 +46,7 @@
                         </h5>
 
                         <ul class="list-disc list-inside text-yellow-600 font-bold">
-                            @foreach($winners as $winner)
+                            @foreach ($winners as $winner)
                                 <li>
                                     🎉 {{ $winner->name }} —
                                     <span class="text-[#09182D]">{{ $winner->votes_count }} votes</span>
@@ -68,11 +68,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($election->candidates as $candidate)
+                        @foreach ($election->candidates as $candidate)
                             <tr>
                                 <td class="px-4 py-2 border text-center">
-                                    @if($candidate->photo)
-                                        <img src="{{ asset('storage/' . $candidate->photo) }}" alt="{{ $candidate->name }}"
+                                    @if ($candidate->photo)
+                                        <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
+                                            alt="{{ $candidate->name }}"
                                             class="w-12 h-12 rounded-full object-cover mx-auto">
                                     @else
                                         <span class="text-gray-400">No photo</span>
@@ -80,7 +81,8 @@
                                 </td>
                                 <td class="px-4 py-2 border text-[#09182D]">{{ $candidate->name }}</td>
                                 <td class="px-4 py-2 border text-[#09182D]">{{ $candidate->position }}</td>
-                                <td class="px-4 py-2 border text-center text-[#09182D]">{{ $candidate->votes_count ?? 0 }}</td>
+                                <td class="px-4 py-2 border text-center text-[#09182D]">{{ $candidate->votes_count ?? 0 }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

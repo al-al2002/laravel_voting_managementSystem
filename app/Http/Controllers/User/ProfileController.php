@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -46,13 +47,23 @@ class ProfileController extends Controller
         // ✅ Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
             // Delete old photo if it exists
-            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
-                Storage::disk('public')->delete($user->profile_photo);
+            if ($user->profile_photo) {
+                try {
+                    Storage::disk('supabase')->delete($user->profile_photo);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete old photo: ' . $e->getMessage());
+                }
             }
 
             // Store new photo
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo = $path;
+            try {
+                $path = $request->file('profile_photo')->store('profile-photos', 'supabase');
+                $user->profile_photo = $path;
+                Log::info('Profile photo uploaded to Supabase: ' . $path);
+            } catch (\Exception $e) {
+                Log::error('Failed to upload profile photo: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Failed to upload photo: ' . $e->getMessage());
+            }
         }
 
         $user->save();

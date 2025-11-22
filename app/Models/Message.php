@@ -19,6 +19,8 @@ class Message extends Model
         'sender_type',
     ];
 
+    protected $appends = ['image_urls'];
+
     /**
      * 🔗 Each message belongs to a user (sender)
      */
@@ -52,10 +54,29 @@ class Message extends Model
     }
 
     /**
-     * 🖼 Full image URL accessor
+     * 🖼 Full image URLs accessor
      */
-    public function getImageUrlAttribute()
+    public function getImageUrlsAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (!$this->image) {
+            return [];
+        }
+
+        $images = json_decode($this->image, true);
+        if (!is_array($images)) {
+            return [];
+        }
+
+        // Get Supabase configuration
+        $supabaseUrl = config('filesystems.disks.supabase.url');
+        $bucket = config('filesystems.disks.supabase.bucket');
+
+        return array_map(function($img) use ($supabaseUrl, $bucket) {
+            if ($supabaseUrl && $bucket) {
+                return rtrim($supabaseUrl, '/') . "/storage/v1/object/public/{$bucket}/{$img}";
+            }
+            // Fallback to local storage if Supabase not configured
+            return asset('storage/' . $img);
+        }, $images);
     }
 }

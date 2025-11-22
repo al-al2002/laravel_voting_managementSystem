@@ -4,6 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Vote;
 
@@ -42,7 +44,32 @@ class VoteController extends Controller
             'logoBase64' => $logoBase64,
         ]);
 
+        // Generate PDF content
+        $pdfContent = $pdf->output();
         $fileName = 'Vote_Receipt_' . $user->id . '_Election_' . $electionId . '.pdf';
-        return $pdf->download($fileName);
+        $filePath = 'receipts/' . $fileName;
+
+        // Store PDF in Supabase
+        try {
+            Storage::disk('supabase')->put($filePath, $pdfContent);
+            Log::info('Vote receipt PDF uploaded to Supabase', [
+                'user_id' => $user->id,
+                'election_id' => $electionId,
+                'path' => $filePath
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to upload vote receipt PDF to Supabase', [
+                'user_id' => $user->id,
+                'election_id' => $electionId,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Return download response
+        return response()->streamDownload(function() use ($pdfContent) {
+            echo $pdfContent;
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 }

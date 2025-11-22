@@ -1,0 +1,75 @@
+services:
+  - type: web
+    name: voting-system
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: VoteMaster
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://voting-system.onrender.com
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: voting-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: voting-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: voting-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: voting-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: voting-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: uploads
+
+databases:
+  - name: voting-db
+    databaseName: voting_system
+    user: voting_user
+    plan: free

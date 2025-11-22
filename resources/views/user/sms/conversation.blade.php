@@ -37,13 +37,10 @@
                     @if ($msg->message)
                         <p>{{ $msg->message }}</p>
                     @endif
-                    @php
-                        $images = !empty($msg->image) ? json_decode($msg->image, true) : [];
-                    @endphp
-                    @if (is_array($images) && count($images) > 0)
+                    @if (!empty($msg->image_urls))
                         <div class="flex flex-wrap gap-2 mt-1">
-                            @foreach ($images as $img)
-                                <img src="{{ asset('storage/' . $img) }}" class="rounded-lg max-w-full">
+                            @foreach ($msg->image_urls as $imgUrl)
+                                <img src="{{ $imgUrl }}" class="rounded-lg max-w-full">
                             @endforeach
                         </div>
                     @endif

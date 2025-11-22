@@ -7,6 +7,7 @@ use App\Models\Candidate;
 use App\Models\Election;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class CandidateController extends Controller
@@ -57,7 +58,14 @@ class CandidateController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('candidates', 'public');
+            try {
+                $path = $request->file('photo')->store('candidates', 'supabase');
+                $validated['photo'] = $path;
+                Log::info('Photo uploaded to Supabase: ' . $path);
+            } catch (\Exception $e) {
+                Log::error('Failed to upload photo: ' . $e->getMessage());
+                return back()->with('error', 'Failed to upload photo: ' . $e->getMessage());
+            }
         }
 
         Candidate::create($validated);
@@ -87,7 +95,7 @@ class CandidateController extends Controller
             $data = array_merge(
                 $candidate,
                 ['election_id' => $request->election_id],
-                !empty($candidate['photo']) ? ['photo' => $candidate['photo']->store('candidates', 'public')] : []
+                !empty($candidate['photo']) ? ['photo' => $candidate['photo']->store('candidates', 'supabase')] : []
             );
             Candidate::create($data);
         }
@@ -123,10 +131,14 @@ class CandidateController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            if ($candidate->photo && Storage::disk('public')->exists($candidate->photo)) {
-                Storage::disk('public')->delete($candidate->photo);
+            if ($candidate->photo) {
+                try {
+                    Storage::disk('supabase')->delete($candidate->photo);
+                } catch (\Exception $e) {
+                    // File doesn't exist or deletion failed, continue
+                }
             }
-            $validated['photo'] = $request->file('photo')->store('candidates', 'public');
+            $validated['photo'] = $request->file('photo')->store('candidates', 'supabase');
         }
 
         $candidate->update($validated);
@@ -140,8 +152,12 @@ class CandidateController extends Controller
      */
     public function destroy(Candidate $candidate)
     {
-        if ($candidate->photo && Storage::disk('public')->exists($candidate->photo)) {
-            Storage::disk('public')->delete($candidate->photo);
+        if ($candidate->photo) {
+            try {
+                Storage::disk('supabase')->delete($candidate->photo);
+            } catch (\Exception $e) {
+                // File doesn't exist or deletion failed, continue
+            }
         }
 
         $candidate->delete();

@@ -27,6 +27,8 @@ class User extends Authenticatable
         'eligibility_overridden' => 'boolean',
     ];
 
+    protected $appends = ['profile_photo_url'];
+
     /* Relationships */
     public function votes()
     {
@@ -145,5 +147,26 @@ public function skippedElectionsWithId(): array
 
     return $skipped;
 }
+
+    /**
+     * Get the full URL for the user's profile photo from Supabase.
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        if (!$this->profile_photo) {
+            return null;
+        }
+
+        // Get Supabase configuration
+        $supabaseUrl = config('filesystems.disks.supabase.url');
+        $bucket = config('filesystems.disks.supabase.bucket');
+
+        if ($supabaseUrl && $bucket) {
+            return rtrim($supabaseUrl, '/') . "/storage/v1/object/public/{$bucket}/{$this->profile_photo}";
+        }
+
+        // Fallback to local storage if Supabase not configured
+        return asset('storage/' . $this->profile_photo);
+    }
 
 }

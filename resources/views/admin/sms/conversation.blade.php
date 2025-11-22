@@ -15,29 +15,24 @@
 
         {{-- Chat area --}}
         <div id="chatBox" class="space-y-4 mb-6 max-h-[400px] overflow-y-auto p-3 bg-gray-50 rounded-lg">
-            @foreach($messages as $message)
-                <div class="p-3 rounded-lg w-fit max-w-[75%]
+            @foreach ($messages as $message)
+                <div
+                    class="p-3 rounded-lg w-fit max-w-[75%]
                             {{ $message->sender_type === 'admin' ? 'bg-blue-100 ml-auto text-right' : 'bg-gray-100' }}">
                     <strong>{{ $message->sender_type === 'admin' ? 'Admin' : $message->user->name }}</strong>:
 
                     {{-- Message text --}}
-                    @if(!empty($message->message))
+                    @if (!empty($message->message))
                         <p class="mt-1 text-gray-800">{{ $message->message }}</p>
                     @endif
 
                     {{-- Attached images --}}
-                    @if($message->image)
-                        @php
-                            $images = is_array(json_decode($message->image, true))
-                                ? json_decode($message->image, true)
-                                : [$message->image];
-                        @endphp
-
+                    @if ($message->image)
                         <div class="mt-2 grid grid-cols-2 gap-2">
-                            @foreach($images as $img)
-                                <img src="{{ asset('storage/' . $img) }}" alt="Image"
+                            @foreach ($message->image_urls as $imgUrl)
+                                <img src="{{ $imgUrl }}" alt="Image"
                                     class="rounded-lg border border-gray-300 object-cover w-full h-40 cursor-pointer"
-                                    onclick="window.open('{{ asset('storage/' . $img) }}', '_blank')">
+                                    onclick="window.open('{{ $imgUrl }}', '_blank')">
                             @endforeach
                         </div>
                     @endif
@@ -52,8 +47,7 @@
         <form action="{{ route('admin.sms.reply', $conversation_id) }}" method="POST" enctype="multipart/form-data"
             id="replyForm">
             @csrf
-            <textarea name="reply" rows="3" class="w-full border rounded-lg p-2 mb-4"
-                placeholder="Write your reply..."></textarea>
+            <textarea name="reply" rows="3" class="w-full border rounded-lg p-2 mb-4" placeholder="Write your reply..."></textarea>
 
             {{-- Image preview --}}
             <div id="imagePreview" class="flex flex-wrap gap-3 mb-4"></div>
@@ -79,7 +73,7 @@
         chatBox.scrollTop = chatBox.scrollHeight;
 
         // Image preview before sending
-        imageInput.addEventListener('change', function () {
+        imageInput.addEventListener('change', function() {
             imagePreview.innerHTML = '';
             Array.from(this.files).forEach(file => {
                 const reader = new FileReader();

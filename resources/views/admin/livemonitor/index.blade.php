@@ -43,7 +43,7 @@
                                         {{-- Candidate info --}}
                                         <div class="flex items-center space-x-3">
                                             @if ($candidate->photo)
-                                                <img src="{{ asset('storage/' . $candidate->photo) }}"
+                                                <img src="{{ $candidate->photo_url ?? asset('images/default-candidate.png') }}"
                                                     alt="{{ $candidate->name }}"
                                                     class="w-10 h-10 rounded-full object-cover">
                                             @else
@@ -77,7 +77,7 @@
                                                             {{-- Voter Photo --}}
                                                             <div class="w-8 h-8 rounded-full overflow-hidden border">
                                                                 @if ($vote->user->profile_photo)
-                                                                    <img src="{{ asset('storage/' . $vote->user->profile_photo) }}"
+                                                                    <img src="{{ $vote->user->profile_photo_url ?? asset('images/default-avatar.png') }}"
                                                                         alt="{{ $vote->user->name }}"
                                                                         class="w-full h-full object-cover">
                                                                 @else

@@ -38,10 +38,26 @@ public function index()
                                      ->where('sender_type', 'admin')
                                      ->count();
 
+            // Get first image URL if exists
+            $firstImageUrl = null;
+            if ($latest->image) {
+                $images = json_decode($latest->image, true);
+                if (is_array($images) && count($images) > 0) {
+                    $supabaseUrl = config('filesystems.disks.supabase.url');
+                    $bucket = config('filesystems.disks.supabase.bucket');
+                    if ($supabaseUrl && $bucket) {
+                        $firstImageUrl = rtrim($supabaseUrl, '/') . "/storage/v1/object/public/{$bucket}/{$images[0]}";
+                    } else {
+                        $firstImageUrl = asset('storage/' . $images[0]);
+                    }
+                }
+            }
+
             return (object)[
                 'conversation_id' => $latest->conversation_id,
                 'latest_message' => $latest->message ?? '',
                 'latest_image' => $latest->image ?? null,
+                'latest_image_url' => $firstImageUrl,
                 'latest_time' => $latest->created_at,
                 'sender_type' => $latest->sender_type,
                 'unread_count_admin' => $unreadCountAdmin,
@@ -88,7 +104,7 @@ public function index()
         $imagePaths = [];
         if ($request->hasFile('image')) {
             foreach ($request->file('image') as $img) {
-                $imagePaths[] = $img->store('messages', 'public');
+                $imagePaths[] = $img->store('messages', 'supabase');
             }
         }
 
@@ -168,7 +184,7 @@ public function index()
 
         if ($request->hasFile('image')) {
             foreach ($request->file('image') as $img) {
-                $imagePaths[] = $img->store('messages', 'public');
+                $imagePaths[] = $img->store('messages', 'supabase');
             }
         }
 
@@ -182,8 +198,12 @@ public function index()
             'sender_type' => 'user',
         ]);
 
+        // Refresh the message to ensure image_urls accessor is available
+        $msg->refresh();
+
         return response()->json([
             'success' => true,
+            'conversation_id' => $conversation_id,
             'message' => $msg
         ]);
     }

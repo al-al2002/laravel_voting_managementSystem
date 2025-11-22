@@ -35,7 +35,7 @@
         <form id="voteForm">
             @csrf
 
-            @foreach($groupedCandidates as $position => $candidatesByPosition)
+            @foreach ($groupedCandidates as $position => $candidatesByPosition)
                 {{-- Position Heading --}}
                 <div class="mb-6">
                     <h4 class="text-xl font-bold text-yellow-400 border-b border-gray-600 pb-2 mb-4">
@@ -44,7 +44,7 @@
 
                     {{-- Candidates Grid --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @foreach($candidatesByPosition as $candidate)
+                        @foreach ($candidatesByPosition as $candidate)
                             <label for="candidate-{{ $candidate->id }}"
                                 class="relative cursor-pointer bg-[#09182D] border border-gray-700 rounded-2xl p-6 text-center hover:scale-105 transition block">
 
@@ -54,7 +54,7 @@
 
                                 {{-- Candidate Image --}}
                                 <div class="relative w-28 h-28 mx-auto mb-4">
-                                    <img src="{{ $candidate->photo_url ?? (isset($candidate->photo) ? asset('storage/' . $candidate->photo) : 'https://via.placeholder.com/150') }}"
+                                    <img src="{{ $candidate->photo_url ?? 'https://via.placeholder.com/150' }}"
                                         alt="{{ $candidate->name }}"
                                         class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-gray-600 peer-checked:border-yellow-400 transition">
                                 </div>
@@ -66,8 +66,8 @@
                                 {{-- Custom Circle Indicator --}}
                                 <div
                                     class="w-6 h-6 rounded-full border-2 border-gray-400 mx-auto mt-4 flex items-center justify-center peer-checked:border-yellow-400 peer-checked:bg-yellow-400">
-                                    <svg class="w-4 h-4 text-[#09182D] opacity-0 peer-checked:opacity-100" fill="currentColor"
-                                        viewBox="0 0 20 20">
+                                    <svg class="w-4 h-4 text-[#09182D] opacity-0 peer-checked:opacity-100"
+                                        fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
                                             d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z"
                                             clip-rule="evenodd" />
@@ -92,7 +92,7 @@
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.getElementById('submitVote').addEventListener('click', function () {
+        document.getElementById('submitVote').addEventListener('click', function() {
             const selected = document.querySelectorAll('input[name="candidate_ids[]"]:checked');
             if (selected.length === 0) {
                 Swal.fire({
@@ -115,13 +115,13 @@
                 if (result.isConfirmed) {
                     const formData = new FormData(document.getElementById('voteForm'));
                     fetch("{{ route('user.elections.vote', $election->id) }}", {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            'Accept': 'application/json'
-                        },
-                        body: formData
-                    })
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -132,11 +132,13 @@
                                     timer: 2000,
                                     showConfirmButton: false,
                                     willClose: () => {
-                                        window.location.href = "{{ route('user.dashboard') }}";
+                                        window.location.href =
+                                            "{{ route('user.dashboard') }}";
                                     }
                                 });
 
-                                document.querySelectorAll('input[name="candidate_ids[]"]').forEach(i => i.disabled = true);
+                                document.querySelectorAll('input[name="candidate_ids[]"]').forEach(i =>
+                                    i.disabled = true);
                                 const btn = document.getElementById('submitVote');
                                 btn.disabled = true;
                                 btn.classList.add('bg-gray-500', 'cursor-not-allowed');
@@ -164,7 +166,7 @@
         const countdownEl = document.getElementById('countdown');
         const endTime = new Date("{{ $election->end_date }}").getTime();
 
-        const x = setInterval(function () {
+        const x = setInterval(function() {
             const now = new Date().getTime();
             const distance = endTime - now;
 
