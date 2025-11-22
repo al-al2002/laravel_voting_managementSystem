@@ -1,0 +1,8 @@
+{
+  "type": "php",
+  "deploy": {
+    "php_version": "8.2",
+    "webroot": "/public",
+    "post_run": "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+  }
+}
