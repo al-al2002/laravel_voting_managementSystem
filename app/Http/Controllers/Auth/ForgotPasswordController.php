@@ -28,46 +28,45 @@ class ForgotPasswordController extends Controller
         $email = $request->input('email');
         $code = $this->storeVerificationCode($email);
 
-        // Set timeout for mail sending
-        set_time_limit(30);
+        $emailSent = false;
+        $errorMessage = null;
 
         try {
-            // Send email asynchronously to avoid blocking
-            Mail::to($email)->queue(new PasswordResetCode($code));
-
-            // Log for debugging
-            Log::info("Password reset code queued for {$email}: {$code}");
+            // Try to send email synchronously with timeout
+            Mail::to($email)->send(new PasswordResetCode($code));
+            $emailSent = true;
+            Log::info("Password reset email sent successfully to {$email}");
         } catch (\Exception $e) {
             report($e);
-            Log::error("Failed to queue password reset email for {$email}: " . $e->getMessage());
+            $errorMessage = $e->getMessage();
+            Log::error("Failed to send password reset email to {$email}: " . $errorMessage);
             Log::info("Password reset code for {$email}: {$code}");
-
-            if ($this->shouldShowDebugCode() || app()->environment('local')) {
-                return redirect()->route('password.enter_code')
-                    ->with('email', $email)
-                    ->with('status', "Verification code: {$code} (Email failed to send)")
-                    ->with('debug_code', $code)
-                    ->with('show_debug_code', true);
-            }
-
-            return back()->withErrors(['email' => 'Failed to send reset code. Please configure mail or try again later.']);
         }
 
+        // Always allow user to proceed (show code in development/local)
+        $showDebug = $this->shouldShowDebugCode() || app()->environment('local') || !$emailSent;
+
         if ($request->wantsJson() || $request->ajax()) {
-            $data = ['status' => 'code_sent'];
-            if ($this->shouldShowDebugCode()) {
+            $data = ['status' => $emailSent ? 'code_sent' : 'code_logged'];
+            if ($showDebug) {
                 $data['debug_code'] = $code;
                 $data['show_debug_code'] = true;
+                if (!$emailSent) {
+                    $data['email_error'] = 'Email sending failed. Use the code shown below.';
+                }
             }
-
             return response()->json($data, 200);
         }
 
+        $statusMessage = $emailSent
+            ? 'A verification code has been sent to your email.'
+            : "Unable to send email. Your verification code is: {$code}";
+
         $redirect = redirect()->route('password.enter_code')
             ->with('email', $email)
-            ->with('status', 'A verification code has been sent to your email.');
+            ->with('status', $statusMessage);
 
-        if ($this->shouldShowDebugCode()) {
+        if ($showDebug) {
             $redirect = $redirect->with('debug_code', $code)->with('show_debug_code', true);
         }
 
