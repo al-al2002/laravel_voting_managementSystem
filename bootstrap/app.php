@@ -14,11 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'isAdmin' => \App\Http\Middleware\IsAdmin::class,
-
-
         ]);
 
-
+        // Add middleware to disconnect database after each request
+        $middleware->append(\App\Http\Middleware\DisconnectDatabase::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
