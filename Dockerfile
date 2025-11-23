@@ -69,6 +69,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN echo '#!/bin/bash\n\
     echo "Running migrations..."\n\
     php artisan migrate --force\n\
+    echo "Seeding admin..."\n\
+    php artisan db:seed --class=AdminSeeder --force\n\
     echo "Clearing cache..."\n\
     php artisan config:cache\n\
     php artisan route:cache\n\
