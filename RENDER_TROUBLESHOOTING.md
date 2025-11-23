@@ -288,4 +288,3 @@ Check these files in the repository:
 - `.env.example` - Environment variable template
 
 Make sure your environment variables in Render match the structure in `.env.example`.
-
