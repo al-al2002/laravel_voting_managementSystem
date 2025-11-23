@@ -103,6 +103,9 @@ RUN echo '#!/bin/bash\n\
     php artisan route:clear || true\n\
     php artisan view:clear || true\n\
     php artisan cache:clear || true\n\
+    php artisan optimize:clear || true\n\
+    echo "Checking mail configuration..."\n\
+    php artisan tinker --execute="echo config(\"'\"'mail.mailers.smtp.host\"'\"');" || true\n\
     echo "Caching config and views..."\n\
     php artisan config:cache || true\n\
     php artisan view:cache || true\n\
