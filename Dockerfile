@@ -4,10 +4,11 @@ FROM php:8.2-apache
 
 
 
-# Install required PHP extensions for Laravel
+# Install Node.js 20.x and required PHP extensions for Laravel
 
-RUN apt-get update && apt-get install -y \
-    git unzip libpq-dev libzip-dev zip \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update && apt-get install -y \
+    nodejs git unzip libpq-dev libzip-dev zip \
     libpng-dev libjpeg-dev libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd
@@ -17,6 +18,11 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite (needed for Laravel routes)
 
 RUN a2enmod rewrite
+
+
+
+# Configure Apache to allow .htaccess overrides
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 
 
@@ -61,6 +67,11 @@ RUN composer install --no-dev --optimize-autoloader
 
 
 
+# Install NPM dependencies and build assets
+RUN npm install && npm run build
+
+
+
 # Set permissions for Laravel storage and cache
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
@@ -71,10 +82,15 @@ RUN echo '#!/bin/bash\n\
     php artisan migrate --force\n\
     echo "Seeding admin..."\n\
     php artisan db:seed --class=AdminSeeder --force\n\
-    echo "Clearing cache..."\n\
+    echo "Clearing and optimizing cache..."\n\
+    php artisan config:clear\n\
+    php artisan route:clear\n\
+    php artisan view:clear\n\
+    php artisan cache:clear\n\
     php artisan config:cache\n\
-    php artisan route:cache\n\
     php artisan view:cache\n\
+    echo "Creating storage link..."\n\
+    php artisan storage:link || true\n\
     echo "Starting queue worker..."\n\
     php artisan queue:work --daemon &\n\
     echo "Starting Apache..."\n\
