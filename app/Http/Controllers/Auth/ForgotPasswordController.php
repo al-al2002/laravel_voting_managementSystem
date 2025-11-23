@@ -32,6 +32,13 @@ class ForgotPasswordController extends Controller
         $errorMessage = null;
 
         try {
+            // Log mail configuration before sending
+            Log::info("Attempting to send email via " . config('mail.default'));
+            Log::info("SMTP Host: " . config('mail.mailers.smtp.host'));
+            Log::info("SMTP Port: " . config('mail.mailers.smtp.port'));
+            Log::info("SMTP Username: " . config('mail.mailers.smtp.username'));
+            Log::info("From Address: " . config('mail.from.address'));
+
             // Try to send email synchronously with timeout
             Mail::to($email)->send(new PasswordResetCode($code));
             $emailSent = true;
@@ -40,6 +47,8 @@ class ForgotPasswordController extends Controller
             report($e);
             $errorMessage = $e->getMessage();
             Log::error("Failed to send password reset email to {$email}: " . $errorMessage);
+            Log::error("Exception class: " . get_class($e));
+            Log::error("Exception trace: " . $e->getTraceAsString());
             Log::info("Password reset code for {$email}: {$code}");
         }
 
