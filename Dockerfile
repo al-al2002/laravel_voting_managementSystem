@@ -15,9 +15,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 
 
-# Enable Apache mod_rewrite (needed for Laravel routes)
+# Enable Apache modules (needed for Laravel routes)
 
-RUN a2enmod rewrite
+RUN a2enmod rewrite dir env mime negotiation
 
 
 
@@ -87,6 +87,13 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN echo '#!/bin/bash\n\
     set -e\n\
     echo "=== Laravel Voting System Startup ==="\n\
+    echo "Verifying public directory..."\n\
+    ls -la /var/www/html/public/ || echo "Public directory not found!"\n\
+    if [ -f /var/www/html/public/index.php ]; then\n\
+    echo "✓ index.php exists"\n\
+    else\n\
+    echo "✗ ERROR: index.php not found!"\n\
+    fi\n\
     echo "Running migrations..."\n\
     php artisan migrate --force || echo "Migration failed, continuing..."\n\
     echo "Seeding admin..."\n\
@@ -101,8 +108,11 @@ RUN echo '#!/bin/bash\n\
     php artisan view:cache || true\n\
     echo "Creating storage link..."\n\
     php artisan storage:link || true\n\
-    echo "Setting permissions..."\n\
+    echo "Setting final permissions..."\n\
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
+    chmod -R 755 /var/www/html/public || true\n\
+    echo "Apache configuration:"\n\
+    cat /etc/apache2/sites-available/000-default.conf\n\
     echo "Starting queue worker in background..."\n\
     php artisan queue:work --daemon &\n\
     echo "=== Starting Apache on port 10000 ==="\n\
