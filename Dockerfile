@@ -21,15 +21,19 @@ RUN a2enmod rewrite
 
 
 
+# Configure Apache ports and virtual host
+RUN echo "Listen 10000" > /etc/apache2/ports.conf \
+    && echo "Listen 80" >> /etc/apache2/ports.conf
+
+
+
+# Copy custom Apache configuration
+COPY apache-laravel.conf /etc/apache2/sites-available/000-default.conf
+
+
+
 # Configure Apache to allow .htaccess overrides
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
-
-
-
-# Set Apache DocumentRoot to /var/www/html/public (Laravel entry point)
-
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/apache2.conf
 
 
 
@@ -74,26 +78,32 @@ RUN npm install && npm run build
 
 # Set permissions for Laravel storage and cache
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Create startup script with migrations
 RUN echo '#!/bin/bash\n\
+    set -e\n\
+    echo "=== Laravel Voting System Startup ==="\n\
     echo "Running migrations..."\n\
-    php artisan migrate --force\n\
+    php artisan migrate --force || echo "Migration failed, continuing..."\n\
     echo "Seeding admin..."\n\
-    php artisan db:seed --class=AdminSeeder --force\n\
-    echo "Clearing and optimizing cache..."\n\
-    php artisan config:clear\n\
-    php artisan route:clear\n\
-    php artisan view:clear\n\
-    php artisan cache:clear\n\
-    php artisan config:cache\n\
-    php artisan view:cache\n\
+    php artisan db:seed --class=AdminSeeder --force || echo "Seeding failed, continuing..."\n\
+    echo "Clearing caches..."\n\
+    php artisan config:clear || true\n\
+    php artisan route:clear || true\n\
+    php artisan view:clear || true\n\
+    php artisan cache:clear || true\n\
+    echo "Caching config and views..."\n\
+    php artisan config:cache || true\n\
+    php artisan view:cache || true\n\
     echo "Creating storage link..."\n\
     php artisan storage:link || true\n\
-    echo "Starting queue worker..."\n\
+    echo "Setting permissions..."\n\
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true\n\
+    echo "Starting queue worker in background..."\n\
     php artisan queue:work --daemon &\n\
-    echo "Starting Apache..."\n\
+    echo "=== Starting Apache on port 10000 ==="\n\
     apache2-foreground' > /usr/local/bin/start.sh \
     && chmod +x /usr/local/bin/start.sh
 
