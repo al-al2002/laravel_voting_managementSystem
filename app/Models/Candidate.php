@@ -5,12 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Admin;
 
 class Candidate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['election_id', 'name', 'position', 'description', 'photo'];
+    protected $fillable = [
+        'election_id',
+        'name',
+        'position',
+        'description',
+        'photo',
+        'created_by_admin_id',
+        'updated_by_admin_id',
+    ];
 
     protected $appends = ['photo_url'];
 
@@ -22,6 +31,16 @@ class Candidate extends Model
     public function votes()
     {
         return $this->hasMany(Vote::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(Admin::class, 'created_by_admin_id');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(Admin::class, 'updated_by_admin_id');
     }
 
     /**

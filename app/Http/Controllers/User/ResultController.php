@@ -25,14 +25,11 @@ class ResultController extends Controller
 
             $election->total_votes = (int) $candidates->sum('votes_count');
 
-            if ($election->total_votes > 0) {
-                $maxVotes = $candidates->max('votes_count');
-                $election->winners = $candidates
-                    ->filter(fn($c) => $c->votes_count === $maxVotes)
-                    ->values();
-            } else {
-                $election->winners = collect();
-            }
+            // Show winners even if votes are 0 (all candidates tied at 0)
+            $maxVotes = $candidates->max('votes_count') ?? 0;
+            $election->winners = $candidates
+                ->filter(fn($c) => $c->votes_count === $maxVotes)
+                ->values();
         }
 
         return view('user.results.index', compact('elections'));

@@ -17,7 +17,7 @@ class AdminDashboardController extends Controller
     $activeList = Election::where('start_date', '<=', $now)->where('end_date', '>=', $now)->get();
     $closedList = Election::where('end_date', '<', $now)->get();
     $upcomingList = Election::where('start_date', '>', $now)->get();
-    $voters = User::where('role', 'voter')->get();
+    $voters = User::all(); // All users are voters now since admins are in separate table
 
     $activeElections = $activeList->count();
     $closedElections = $closedList->count();

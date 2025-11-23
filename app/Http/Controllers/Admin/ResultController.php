@@ -19,6 +19,11 @@ class ResultController extends Controller
             ->orderBy('end_date', 'desc')
             ->get();
 
+        // Calculate total votes for each election
+        foreach ($elections as $election) {
+            $election->total_votes = $election->candidates->sum('votes_count');
+        }
+
         return view('admin.results.index', compact('elections'));
     }
 }

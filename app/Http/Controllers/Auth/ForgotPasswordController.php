@@ -43,8 +43,8 @@ class ForgotPasswordController extends Controller
             Log::info("Password reset code for {$email}: {$code}");
         }
 
-        // Always allow user to proceed (show code in development/local)
-        $showDebug = $this->shouldShowDebugCode() || app()->environment('local') || !$emailSent;
+        // Always allow user to proceed (show code in development/local only when email fails)
+        $showDebug = ($this->shouldShowDebugCode() && !$emailSent) || (app()->environment('local') && !$emailSent);
 
         if ($request->wantsJson() || $request->ajax()) {
             $data = ['status' => $emailSent ? 'code_sent' : 'code_logged'];

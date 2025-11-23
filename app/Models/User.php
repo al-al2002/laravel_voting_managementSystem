@@ -19,7 +19,7 @@ class User extends Authenticatable
         'profile_photo',
         'is_eligible',
         'eligibility_overridden',
-        'role',
+        'override_at_skip_count',
     ];
 
     protected $casts = [
@@ -44,15 +44,18 @@ class User extends Authenticatable
     /* Skipped Elections Logic */
     public function skippedElections(): array
     {
-        // Elections that have ended after voter creation
-        $endedElections = Election::where('end_date', '>', $this->created_at)
-                                  ->where('end_date', '<=', now())
+        // Get all elections that have ended and where the voter had the opportunity to vote
+        // Voter had opportunity if they were created before the election ended
+        $endedElections = Election::where('end_date', '<=', now())
+                                  ->where('end_date', '>=', $this->created_at)
                                   ->get();
 
         $skipped = [];
         foreach ($endedElections as $election) {
             $voted = $this->votes()->where('election_id', $election->id)->exists();
-            if (!$voted) $skipped[] = $election->title;
+            if (!$voted) {
+                $skipped[] = $election->title;
+            }
         }
 
         return $skipped;
@@ -67,6 +70,7 @@ class User extends Authenticatable
 
     /**
      * Calculate auto-eligibility based on skipped elections
+     * Returns false if voter has skipped 5 or more elections
      */
     public function isAutoEligible(): bool
     {
@@ -89,15 +93,24 @@ class User extends Authenticatable
 
     /**
      * Refresh eligibility automatically
+     * Admin overrides are cleared when voter skips 5 MORE elections after the override.
+     * This creates a cycle: 5 skips → auto-ineligible, admin override → eligible,
+     * 5 MORE skips (total 10) → auto-ineligible again, etc.
      */
     public function refreshEligibility(): void
     {
-        // If admin override exists, respect it
+        $currentSkipCount = $this->skippedElectionsCount();
+
+        // If admin has manually overridden eligibility
         if ($this->eligibility_overridden) {
-            // Only remove override if auto rules allow it
-            if ($this->isAutoEligible()) {
+            // Check if voter has skipped 5 MORE elections since the override was set
+            $skipsSinceOverride = $currentSkipCount - $this->override_at_skip_count;
+
+            if ($skipsSinceOverride >= 5) {
+                // Clear the override and apply automatic rules
                 $this->eligibility_overridden = false;
-                $this->is_eligible = true;
+                $this->override_at_skip_count = 0;
+                $this->is_eligible = false; // They just hit another 5 skips
                 $this->save();
             }
             return;
@@ -105,6 +118,7 @@ class User extends Authenticatable
 
         // No override: auto-adjust eligibility based on skipped elections
         $autoEligible = $this->isAutoEligible();
+
         if ($this->is_eligible !== $autoEligible) {
             $this->is_eligible = $autoEligible;
             $this->save();
@@ -116,12 +130,16 @@ class User extends Authenticatable
     {
         $this->is_eligible = $status;
         $this->eligibility_overridden = true;
+        // Track how many elections were skipped at the time of override
+        $this->override_at_skip_count = $this->skippedElectionsCount();
         $this->save();
     }
 
     public function removeOverride(): void
     {
         $this->eligibility_overridden = false;
+        // Set back to auto-calculated eligibility
+        $this->is_eligible = $this->isAutoEligible();
         $this->save();
     }
     // User.php
@@ -129,8 +147,9 @@ class User extends Authenticatable
 
 public function skippedElectionsWithId(): array
 {
-    $endedElections = Election::where('end_date', '>', $this->created_at)
-                              ->where('end_date', '<=', now())
+    // Get all elections that have ended and where the voter had the opportunity to vote
+    $endedElections = Election::where('end_date', '<=', now())
+                              ->where('end_date', '>=', $this->created_at)
                               ->get();
 
     $skipped = [];

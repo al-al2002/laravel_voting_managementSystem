@@ -66,6 +66,7 @@ class SmsController extends Controller
 
         Message::create([
             'user_id' => $firstMessage->user_id,
+            'admin_id' => session('auth_id'), // Track which admin replied
             'conversation_id' => $conversation_id,
             'message' => $request->reply ?? '',
             'image' => !empty($images) ? json_encode($images) : null,

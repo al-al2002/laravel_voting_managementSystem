@@ -63,7 +63,7 @@ Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name(
 // ----------------------
 // Admin Routes
 // ----------------------
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'isAdmin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['isAdmin'])->group(function () {
 
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 

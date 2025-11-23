@@ -11,6 +11,7 @@ class Message extends Model
 
     protected $fillable = [
         'user_id',
+        'admin_id',
         'conversation_id',
         'message',
         'image',
@@ -27,6 +28,14 @@ class Message extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 🔗 Each message may belong to an admin (when admin replies)
+     */
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
     }
 
     /**

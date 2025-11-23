@@ -68,11 +68,20 @@
                                     <td class="px-4 py-2 text-center">
                                         @if ($voter->finalEligibility())
                                             <span
-                                                class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Eligible</span>
+                                                class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                                Eligible
+                                                @if ($voter->eligibility_overridden)
+                                                    <span class="text-xs" title="Admin Override">⚠️</span>
+                                                @endif
+                                            </span>
                                         @else
                                             <span
-                                                class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Not
-                                                Eligible</span>
+                                                class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                                Not Eligible
+                                                @if ($voter->eligibility_overridden)
+                                                    <span class="text-xs" title="Admin Override">⚠️</span>
+                                                @endif
+                                            </span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-2 text-center">
@@ -118,10 +127,10 @@
         <div style="max-height: 300px; overflow-y: auto; text-align: left; padding-right: 5px;">
             <ul class="space-y-2">
                 ${elections.map(e => `
-                                        <li class="p-2 bg-gray-50 rounded border">
-                                            <a href="/admin/elections/${e.id}" class="text-blue-600 hover:underline">${e.title}</a>
-                                        </li>
-                                    `).join('')}
+                                            <li class="p-2 bg-gray-50 rounded border">
+                                                <a href="/admin/elections/${e.id}" class="text-blue-600 hover:underline">${e.title}</a>
+                                            </li>
+                                        `).join('')}
             </ul>
         </div>
     `,

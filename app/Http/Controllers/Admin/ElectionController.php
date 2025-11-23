@@ -60,12 +60,14 @@ class ElectionController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        Election::create($request->only([
-            'title',
-            'description',
-            'start_date',
-            'end_date',
-        ]));
+        Election::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'created_by_admin_id' => session('auth_id'),
+            'updated_by_admin_id' => session('auth_id'),
+        ]);
 
         return redirect()
             ->route('admin.elections.index')
@@ -104,12 +106,16 @@ class ElectionController extends Controller
             'end_date' => 'required|date_format:Y-m-d\TH:i|after_or_equal:start_date',
         ]);
 
-        $election->update($request->only([
-            'title',
-            'description',
-            'start_date',
-            'end_date',
-        ]));
+        $election->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'updated_by_admin_id' => session('auth_id'),
+        ]);
+
+        // Refresh the model to ensure dates are properly loaded
+        $election->refresh();
 
         return redirect()
             ->route('admin.elections.index')

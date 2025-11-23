@@ -68,6 +68,9 @@ class CandidateController extends Controller
             }
         }
 
+        $validated['created_by_admin_id'] = session('auth_id');
+        $validated['updated_by_admin_id'] = session('auth_id');
+
         Candidate::create($validated);
 
         return redirect()->route('admin.candidates.index')
@@ -95,7 +98,9 @@ class CandidateController extends Controller
             $data = array_merge(
                 $candidate,
                 ['election_id' => $request->election_id],
-                !empty($candidate['photo']) ? ['photo' => $candidate['photo']->store('candidates', 'supabase')] : []
+                !empty($candidate['photo']) ? ['photo' => $candidate['photo']->store('candidates', 'supabase')] : [],
+                ['created_by_admin_id' => session('auth_id')],
+                ['updated_by_admin_id' => session('auth_id')]
             );
             Candidate::create($data);
         }
@@ -140,6 +145,8 @@ class CandidateController extends Controller
             }
             $validated['photo'] = $request->file('photo')->store('candidates', 'supabase');
         }
+
+        $validated['updated_by_admin_id'] = session('auth_id');
 
         $candidate->update($validated);
 

@@ -5,7 +5,7 @@
 @section('header-actions')
     <div class="flex items-center gap-4">
         <p class="text-gray-700 font-medium text-lg">
-            👋 Hi, {{ Auth::user()->name }}
+            👋 Hi, {{ App\Models\Admin::find(session('auth_id'))->name }}
         </p>
     </div>
 @endsection

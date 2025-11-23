@@ -42,16 +42,24 @@
         <form id="loginForm" method="POST" action="{{ route('login') }}">
             @csrf
             <div class="mb-3 position-relative">
-                <input type="text" name="login" class="form-control ps-5" placeholder="Voter ID or Email" required>
+                <input type="text" name="login" class="form-control ps-5 @error('login') is-invalid @enderror"
+                    placeholder="Voter ID or Email" value="{{ old('login') }}" required>
                 <i class="bi bi-card-text position-absolute input-leading-icon"></i>
+                @error('login')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3 position-relative">
-                <input id="loginPassword" type="password" name="password" class="form-control ps-5 pe-5"
+                <input id="loginPassword" type="password" name="password"
+                    class="form-control ps-5 pe-5 @error('password') is-invalid @enderror"
                     placeholder="Enter your password" required>
                 <i class="bi bi-lock position-absolute input-leading-icon"></i>
                 <i class="bi bi-eye position-absolute input-trailing-icon"
                     onclick="togglePassword('loginPassword', this)"></i>
+                @error('password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="d-flex justify-content-between mb-3">
@@ -62,34 +70,56 @@
                 <a href="{{ route('password.request') }}" class="text-decoration-none">Forgot password?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Sign In</button>
+            <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                <span id="loginBtnText">Sign In</span>
+                <span id="loginBtnSpinner" class="d-none">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Signing in...
+                </span>
+            </button>
         </form>
 
         <!-- Register Form -->
         <form id="registerForm" method="POST" action="{{ route('register') }}" class="d-none">
             @csrf
             <div class="mb-3 position-relative">
-                <input type="text" name="name" class="form-control ps-5" placeholder="Full Name" required>
+                <input type="text" name="name" class="form-control ps-5 @error('name') is-invalid @enderror"
+                    placeholder="Full Name" value="{{ old('name') }}" required>
                 <i class="bi bi-person position-absolute" style="top:50%; left:15px; transform:translateY(-50%);"></i>
+                @error('name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3 position-relative">
-                <input type="email" name="email" class="form-control ps-5" placeholder="Email Address" required>
+                <input type="email" name="email" class="form-control ps-5 @error('email') is-invalid @enderror"
+                    placeholder="Email Address" value="{{ old('email') }}" required>
                 <i class="bi bi-envelope position-absolute" style="top:50%; left:15px; transform:translateY(-50%);"></i>
+                @error('email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3 position-relative">
-                <input type="text" name="voter_id" class="form-control ps-5" placeholder="Voter ID Number" required>
+                <input type="text" name="voter_id" class="form-control ps-5 @error('voter_id') is-invalid @enderror"
+                    placeholder="Voter ID (6 digits)" value="{{ old('voter_id') }}" maxlength="6" required>
                 <i class="bi bi-card-text position-absolute"
                     style="top:50%; left:15px; transform:translateY(-50%);"></i>
+                @error('voter_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3 position-relative">
-                <input id="registerPassword" type="password" name="password" class="form-control ps-5 pe-5"
+                <input id="registerPassword" type="password" name="password"
+                    class="form-control ps-5 pe-5 @error('password') is-invalid @enderror"
                     placeholder="Create password" required>
                 <i class="bi bi-lock position-absolute input-leading-icon"></i>
                 <i class="bi bi-eye position-absolute input-trailing-icon"
                     onclick="togglePassword('registerPassword', this)"></i>
+                @error('password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3 position-relative">
@@ -101,14 +131,24 @@
             </div>
 
             <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="agree" name="agree" required>
+                <input type="checkbox" class="form-check-input @error('agree') is-invalid @enderror" id="agree"
+                    name="agree" {{ old('agree') ? 'checked' : '' }} required>
                 <label class="form-check-label text-white" for="agree">
                     I agree to the <a href="#" class="text-info" data-bs-toggle="modal"
                         data-bs-target="#termsModal">VoteMaster Voting Management System Terms &amp; Conditions</a>
                 </label>
+                @error('agree')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <button type="submit" class="btn btn-success w-100">Create Account</button>
+            <button type="submit" class="btn btn-success w-100" id="registerBtn">
+                <span id="registerBtnText">Create Account</span>
+                <span id="registerBtnSpinner" class="d-none">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Creating account...
+                </span>
+            </button>
         </form>
     </div>
 
@@ -144,11 +184,21 @@
         window.sessionError = "{{ session('error') ?? '' }}";
         window.sessionSuccess = "{{ session('success') ?? '' }}";
 
-        if (window.errors.length > 0) {
-            Swal.fire("Error", window.errors.join("<br>"), "error");
-            document.getElementById("register-tab").click(); // auto open register if validation fails
-        }
+        // Auto-switch to the correct tab based on which form had validation errors
+        @if (
+            $errors->has('name') ||
+                $errors->has('email') ||
+                $errors->has('voter_id') ||
+                $errors->has('password') ||
+                $errors->has('agree'))
+            // Register form has errors - switch to register tab
+            document.getElementById("register-tab").click();
+        @elseif ($errors->has('login'))
+            // Login form has errors - keep on login tab (default)
+            document.getElementById("login-tab").click();
+        @endif
 
+        // Only show SweetAlert for session messages, not validation errors
         if (window.sessionError) {
             Swal.fire("Error", window.sessionError, "error");
         }
@@ -169,6 +219,27 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
+    <script>
+        // Add loading state to login form
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const btnSpinner = document.getElementById('loginBtnSpinner');
+            btn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+        });
+
+        // Add loading state to register form
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            const btn = document.getElementById('registerBtn');
+            const btnText = document.getElementById('registerBtnText');
+            const btnSpinner = document.getElementById('registerBtnSpinner');
+            btn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+        });
+    </script>
 </body>
 
 </html>

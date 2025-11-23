@@ -233,8 +233,19 @@
                         {{-- Download Cast Button --}}
                         <div class="mt-4">
                             <a href="{{ route('user.vote.downloadPDF', ['election' => $electionId]) }}"
-                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-semibold">
-                                Download Cast
+                                class="download-cast-btn bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm font-semibold inline-flex items-center"
+                                onclick="handleDownload(event, this)">
+                                <span class="download-text">Download Cast</span>
+                                <span class="download-spinner hidden ml-2">
+                                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                </span>
                             </a>
                         </div>
                     </div>
@@ -295,5 +306,23 @@
                     }
                 }, 1000);
             @endforeach
+
+            // Handle download cast button loading state
+            function handleDownload(event, button) {
+                const text = button.querySelector('.download-text');
+                const spinner = button.querySelector('.download-spinner');
+
+                // Show loading state
+                text.textContent = 'Downloading...';
+                spinner.classList.remove('hidden');
+                button.classList.add('opacity-75', 'cursor-wait');
+
+                // Reset after download starts (allow default link behavior)
+                setTimeout(() => {
+                    text.textContent = 'Download Cast';
+                    spinner.classList.add('hidden');
+                    button.classList.remove('opacity-75', 'cursor-wait');
+                }, 2000);
+            }
         </script>
     @endsection
