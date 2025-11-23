@@ -35,6 +35,15 @@ use App\Http\Controllers\User\VoteController;
 // ----------------------
 Route::get('/', fn() => redirect()->route('login'));
 
+// Health check for Render deployment
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'OK',
+        'timestamp' => now(),
+        'environment' => app()->environment(),
+    ]);
+});
+
 // ----------------------
 // Auth Routes
 // ----------------------
