@@ -116,8 +116,6 @@ RUN echo '#!/bin/bash\n\
     chmod -R 755 /var/www/html/public || true\n\
     echo "Apache configuration:"\n\
     cat /etc/apache2/sites-available/000-default.conf\n\
-    echo "Starting queue worker in background..."\n\
-    php artisan queue:work --daemon &\n\
     echo "=== Starting Apache on port 10000 ==="\n\
     apache2-foreground' > /usr/local/bin/start.sh \
     && chmod +x /usr/local/bin/start.sh

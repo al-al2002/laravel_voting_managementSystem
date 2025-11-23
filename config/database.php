@@ -61,7 +61,12 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 PDO::ATTR_PERSISTENT => false,
                 PDO::ATTR_TIMEOUT => 5,
+                PDO::ATTR_EMULATE_PREPARES => true,
             ]) : [],
+            'pool' => [
+                'min_connections' => 1,
+                'max_connections' => 2,
+            ],
         ],
 
         'mariadb' => [
