@@ -65,18 +65,24 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Create startup script
+# Create startup script with migrations
 RUN echo '#!/bin/bash\n\
+    echo "Running migrations..."\n\
+    php artisan migrate --force\n\
+    echo "Clearing cache..."\n\
+    php artisan config:cache\n\
+    php artisan route:cache\n\
+    php artisan view:cache\n\
+    echo "Starting queue worker..."\n\
     php artisan queue:work --daemon &\n\
+    echo "Starting Apache..."\n\
     apache2-foreground' > /usr/local/bin/start.sh \
     && chmod +x /usr/local/bin/start.sh
 
 # Expose Render's required port
-
 EXPOSE 10000
 
-# Start Apache with queue worker
-
+# Start Apache with migrations and queue worker
 CMD ["/usr/local/bin/start.sh"]
 
 
