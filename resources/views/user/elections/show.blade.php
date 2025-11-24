@@ -83,7 +83,18 @@
             <div class="text-center mt-10">
                 <button type="button" id="submitVote"
                     class="bg-yellow-400 text-[#09182D] px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition">
-                    Submit Vote
+                    <span id="submitVoteText">Submit Vote</span>
+                    <span id="submitVoteSpinner" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-[#09182D] inline"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        Submitting...
+                    </span>
                 </button>
             </div>
         </form>
@@ -113,6 +124,15 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading state
+                    const btn = document.getElementById('submitVote');
+                    const btnText = document.getElementById('submitVoteText');
+                    const btnSpinner = document.getElementById('submitVoteSpinner');
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnText.classList.add('hidden');
+                    btnSpinner.classList.remove('hidden');
+
                     const formData = new FormData(document.getElementById('voteForm'));
                     fetch("{{ route('user.elections.vote', $election->id) }}", {
                             method: 'POST',
@@ -139,10 +159,14 @@
 
                                 document.querySelectorAll('input[name="candidate_ids[]"]').forEach(i =>
                                     i.disabled = true);
-                                const btn = document.getElementById('submitVote');
-                                btn.disabled = true;
-                                btn.classList.add('bg-gray-500', 'cursor-not-allowed');
+                                btn.classList.add('bg-gray-500');
                             } else {
+                                // Reset loading state on error
+                                btn.disabled = false;
+                                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                                btnText.classList.remove('hidden');
+                                btnSpinner.classList.add('hidden');
+
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Oops!',
@@ -151,6 +175,12 @@
                             }
                         })
                         .catch(error => {
+                            // Reset loading state on error
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            btnText.classList.remove('hidden');
+                            btnSpinner.classList.add('hidden');
+
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

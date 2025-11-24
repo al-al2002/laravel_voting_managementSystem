@@ -55,8 +55,20 @@
             <input type="file" name="image[]" id="imageInput" multiple class="mb-4 block text-sm text-gray-600">
 
             <div class="flex justify-end">
-                <button type="submit" class="px-4 py-2 rounded bg-[#09182D] text-white hover:bg-[#0c223f] transition">
-                    Send Reply
+                <button type="submit" id="sendReplyBtn"
+                    class="px-4 py-2 rounded bg-[#09182D] text-white hover:bg-[#0c223f] transition">
+                    <span id="sendReplyText">Send Reply</span>
+                    <span id="sendReplySpinner" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        Sending...
+                    </span>
                 </button>
             </div>
         </form>
@@ -71,6 +83,17 @@
 
         // Auto scroll to bottom on load (show latest messages)
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Loading state for reply form
+        replyForm.addEventListener('submit', function() {
+            const btn = document.getElementById('sendReplyBtn');
+            const btnText = document.getElementById('sendReplyText');
+            const btnSpinner = document.getElementById('sendReplySpinner');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
+        });
 
         // Image preview before sending
         imageInput.addEventListener('change', function() {

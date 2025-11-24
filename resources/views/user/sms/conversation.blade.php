@@ -69,8 +69,21 @@
             </svg>
         </label>
         <input type="file" name="image[]" id="image" multiple class="hidden">
-        <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition flex items-center gap-1">Send</button>
+        <button type="submit" id="replyBtn"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition flex items-center gap-1">
+            <span id="replyText">Send</span>
+            <span id="replySpinner" class="hidden">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                    </circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                Sending...
+            </span>
+        </button>
     </form>
 
     @if (request()->ajax())
@@ -104,6 +117,17 @@
         const messagesContainer = document.getElementById('messagesContainer');
         window.addEventListener('load', () => {
             if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+
+        // Loading state for reply form
+        document.getElementById('replyForm').addEventListener('submit', function() {
+            const btn = document.getElementById('replyBtn');
+            const btnText = document.getElementById('replyText');
+            const btnSpinner = document.getElementById('replySpinner');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
         });
     </script>
 

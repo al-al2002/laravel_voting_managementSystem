@@ -137,8 +137,6 @@
                                 class="block px-4 py-2 text-sm text-white hover:bg-gray-700">Edit Profile</a>
                             <a href="{{ route('user.profile.settings') }}"
                                 class="block px-4 py-2 text-sm text-white hover:bg-gray-700">Settings</a>
-                            <a href="{{ route('user.password.change') }}"
-                                class="block px-4 py-2 text-sm text-white hover:bg-gray-700">Change Password</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
