@@ -44,6 +44,39 @@ Route::get('/health', function () {
     ]);
 });
 
+// Mail configuration test endpoint
+Route::get('/test-mail-config', function () {
+    return response()->json([
+        'mail_mailer' => config('mail.default'),
+        'smtp_host' => config('mail.mailers.smtp.host'),
+        'smtp_port' => config('mail.mailers.smtp.port'),
+        'smtp_encryption' => config('mail.mailers.smtp.encryption'),
+        'smtp_username' => config('mail.mailers.smtp.username'),
+        'smtp_password_set' => !empty(config('mail.mailers.smtp.password')),
+        'smtp_password_length' => strlen(config('mail.mailers.smtp.password') ?? ''),
+        'from_address' => config('mail.from.address'),
+        'from_name' => config('mail.from.name'),
+        'app_env' => app()->environment(),
+    ]);
+});
+
+// Test email sending
+Route::get('/test-send-email', function () {
+    try {
+        \Illuminate\Support\Facades\Mail::raw('Test email from VoteMaster', function ($message) {
+            $message->to('quizasiblings@gmail.com')
+                    ->subject('Test Email');
+        });
+        return response()->json(['status' => 'Email sent successfully!']);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Failed to send email',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ], 500);
+    }
+});
+
 // ----------------------
 // Auth Routes
 // ----------------------
