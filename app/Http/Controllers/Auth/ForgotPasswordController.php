@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\PasswordResetCode;
 use App\Models\User;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -40,9 +41,12 @@ class ForgotPasswordController extends Controller
             Log::info("From Address: " . config('mail.from.address'));
 
             // Try to send email synchronously with timeout
-            Mail::to($email)->send(new PasswordResetCode($code));
-            $emailSent = true;
-            Log::info("Password reset email sent successfully to {$email}");
+            $emailSent = $this->sendViaSendGridApi($email, $code);
+            if ($emailSent) {
+                Log::info("Password reset email sent via SendGrid API to {$email}");
+            } else {
+                throw new \Exception("SendGrid API send failed");
+            }
         } catch (\Exception $e) {
             report($e);
             $errorMessage = $e->getMessage();
@@ -204,5 +208,46 @@ class ForgotPasswordController extends Controller
     protected function shouldShowDebugCode(): bool
     {
         return config('mail.default') === 'log' || env('MAIL_MAILER') === 'log';
+    }
+
+    protected function sendViaSendGridApi(string $email, string $code): bool
+    {
+        try {
+            $apiKey = config('mail.mailers.smtp.password');
+            $fromEmail = config('mail.from.address');
+            $fromName = config('mail.from.name');
+
+            $client = new Client(['timeout' => 30]);
+
+            $response = $client->post('https://api.sendgrid.com/v3/mail/send', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'personalizations' => [
+                        [
+                            'to' => [['email' => $email]],
+                        ],
+                    ],
+                    'from' => [
+                        'email' => $fromEmail,
+                        'name' => $fromName,
+                    ],
+                    'subject' => 'Your password reset code',
+                    'content' => [
+                        [
+                            'type' => 'text/html',
+                            'value' => view('emails.password_reset_code', ['code' => $code])->render(),
+                        ],
+                    ],
+                ],
+            ]);
+
+            return $response->getStatusCode() === 202;
+        } catch (\Exception $e) {
+            Log::error("SendGrid API error: " . $e->getMessage());
+            return false;
+        }
     }
 }
