@@ -37,7 +37,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('password.set_new.update') }}">
+        <form method="POST" action="{{ route('password.set_new.update') }}" id="setNewPasswordForm">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
             <div class="mb-3">
@@ -71,7 +71,13 @@
 
             <div class="mt-4 d-flex justify-content-between align-items-center">
                 <a href="{{ route('login') }}" class="text-info">Back to login</a>
-                <button type="submit" class="btn btn-primary">Set new password</button>
+                <button type="submit" class="btn btn-primary" id="setPasswordBtn">
+                    <span class="btn-text">Set new password</span>
+                    <span class="btn-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Updating...
+                    </span>
+                </button>
             </div>
         </form>
     </div>
@@ -90,6 +96,18 @@
                 timerProgressBar: true,
             });
         }
+
+        // Loading state for set password button
+        const form = document.getElementById('setNewPasswordForm');
+        const setPasswordBtn = document.getElementById('setPasswordBtn');
+        const btnText = setPasswordBtn.querySelector('.btn-text');
+        const btnSpinner = setPasswordBtn.querySelector('.btn-spinner');
+
+        form.addEventListener('submit', function() {
+            setPasswordBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+        });
     </script>
 </body>
 
