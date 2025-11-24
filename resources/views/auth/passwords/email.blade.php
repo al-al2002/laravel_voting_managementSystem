@@ -44,20 +44,32 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('password.email') }}">
+        <form method="POST" action="{{ route('password.email') }}" id="forgotPasswordForm">
             @csrf
             <div class="mb-3">
                 <label class="form-label text-white">Email address</label>
                 <div class="position-relative">
                     <input type="email" name="email" required value="{{ old('email') }}" class="form-control ps-5"
-                        placeholder="you@example.com">
+                        placeholder="you@example.com" id="emailInput">
                     <i class="bi bi-envelope position-absolute input-leading-icon"></i>
                 </div>
             </div>
 
+            <div class="alert alert-info text-sm" role="alert">
+                <i class="bi bi-info-circle me-1"></i>
+                A verification code will be sent to your email. <strong>Check your spam folder</strong> if you don't see
+                it in your inbox.
+            </div>
+
             <div class="mt-4 d-flex justify-content-between align-items-center">
                 <a href="{{ route('login') }}" class="text-sm text-info">Back to login</a>
-                <button type="submit" class="btn btn-primary">Send code</button>
+                <button type="submit" class="btn btn-primary" id="sendCodeBtn">
+                    <span class="btn-text">Send code</span>
+                    <span class="btn-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Sending...
+                    </span>
+                </button>
             </div>
         </form>
     </div>
@@ -79,6 +91,18 @@
         if (window.sessionSuccess) {
             Swal.fire("Success", window.sessionSuccess, "success");
         }
+
+        // Loading state for send code button
+        const form = document.getElementById('forgotPasswordForm');
+        const sendBtn = document.getElementById('sendCodeBtn');
+        const btnText = sendBtn.querySelector('.btn-text');
+        const btnSpinner = sendBtn.querySelector('.btn-spinner');
+
+        form.addEventListener('submit', function() {
+            sendBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+        });
     </script>
 
 </body>

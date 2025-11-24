@@ -36,7 +36,15 @@
         @endif
 
         @if (session('status'))
-            <div class="bg-green-600 text-white px-3 py-2 rounded mb-3">{{ session('status') }}</div>
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle me-1"></i>
+                {{ session('status') }}
+                @if (!str_contains(session('status'), 'Unable to send'))
+                    <div class="mt-2 small">
+                        <strong>Didn't receive it?</strong> Check your spam folder.
+                    </div>
+                @endif
+            </div>
         @endif
 
         {{-- Debug code displayed in logfile mode only. --}}
@@ -59,7 +67,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('password.check_code') }}">
+        <form method="POST" action="{{ route('password.check_code') }}" id="verifyCodeForm">
             @csrf
             <div class="mb-3">
                 <label class="form-label text-white">Email</label>
@@ -80,11 +88,23 @@
             <div class="mt-4 d-flex justify-content-between align-items-center">
                 <div class="d-flex flex-column">
                     <a href="{{ route('login') }}" class="text-info">Back to login</a>
-                    <button type="button" id="resendCodeBtn" class="btn btn-link text-info p-0 mt-2 text-start">Resend
-                        code</button>
+                    <button type="button" id="resendCodeBtn" class="btn btn-link text-info p-0 mt-2 text-start">
+                        <span class="resend-text">Resend code</span>
+                        <span class="resend-spinner d-none">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"
+                                aria-hidden="true"></span>
+                            Sending...
+                        </span>
+                    </button>
                     <span id="resendCountdown" class="small text-white mt-1"></span>
                 </div>
-                <button type="submit" class="btn btn-primary">Verify code</button>
+                <button type="submit" class="btn btn-primary" id="verifyCodeBtn">
+                    <span class="verify-text">Verify code</span>
+                    <span class="verify-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Verifying...
+                    </span>
+                </button>
             </div>
         </form>
     </div>
@@ -172,6 +192,13 @@
                     debugContainer.classList.add('d-none');
                 }
 
+                // Show loading state
+                const resendText = resendBtn.querySelector('.resend-text');
+                const resendSpinner = resendBtn.querySelector('.resend-spinner');
+                resendBtn.disabled = true;
+                resendText.classList.add('d-none');
+                resendSpinner.classList.remove('d-none');
+
                 startCountdown();
                 try {
                     const data = await requestResend(emailInput.value.trim());
@@ -183,7 +210,23 @@
                     }
                 } catch (error) {
                     showStatus(error.message, 'danger');
+                } finally {
+                    // Hide loading state
+                    resendText.classList.remove('d-none');
+                    resendSpinner.classList.add('d-none');
                 }
+            });
+
+            // Add loading state for verify code button
+            const verifyForm = document.getElementById('verifyCodeForm');
+            const verifyBtn = document.getElementById('verifyCodeBtn');
+            const verifyText = verifyBtn.querySelector('.verify-text');
+            const verifySpinner = verifyBtn.querySelector('.verify-spinner');
+
+            verifyForm.addEventListener('submit', function() {
+                verifyBtn.disabled = true;
+                verifyText.classList.add('d-none');
+                verifySpinner.classList.remove('d-none');
             });
         });
     </script>
