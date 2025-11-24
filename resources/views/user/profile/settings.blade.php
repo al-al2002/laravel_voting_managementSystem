@@ -11,80 +11,112 @@
 
         <h2 class="text-xl font-bold mb-6">Profile Settings</h2>
 
-        {{-- Change Password Section --}}
-        <div class="bg-[#1a2f4a] p-5 rounded-lg border border-gray-600">
-            <h3 class="text-lg font-semibold mb-4">Change Password</h3>
-
-            {{-- Success Message --}}
-            @if (session('success'))
-                <div class="mb-4 p-3 bg-green-600 text-white rounded">
-                    {{ session('success') }}
+        {{-- Settings Options --}}
+        <div class="space-y-4">
+            {{-- Change Password Button --}}
+            <button onclick="togglePasswordForm()"
+                class="w-full bg-[#1a2f4a] hover:bg-[#234060] p-4 rounded-lg border border-gray-600 text-left transition flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                    <span class="font-semibold">Change Password</span>
                 </div>
-            @endif
+                <svg id="passwordArrow" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
 
-            {{-- Error Messages --}}
-            @if ($errors->any())
-                <div class="mb-4 p-3 bg-red-600 text-white rounded">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            {{-- Change Password Form (Hidden by default) --}}
+            <div id="passwordFormContainer" class="hidden bg-[#1a2f4a] p-5 rounded-lg border border-gray-600">
+                {{-- Success Message --}}
+                @if (session('success'))
+                    <div class="mb-4 p-3 bg-green-600 text-white rounded">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            {{-- Change Password Form --}}
-            <form method="POST" action="{{ route('user.password.update') }}" id="changePasswordForm">
-                @csrf
+                {{-- Error Messages --}}
+                @if ($errors->any())
+                    <div class="mb-4 p-3 bg-red-600 text-white rounded">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                {{-- Current Password --}}
-                <div class="mb-4 relative">
-                    <label for="current_password" class="block font-medium mb-1">Current Password</label>
-                    <input type="password" name="current_password" id="current_password"
-                        class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
-                    <button type="button" onclick="togglePassword('current_password', this)"
-                        class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
-                </div>
+                {{-- Change Password Form --}}
+                <form method="POST" action="{{ route('user.password.update') }}" id="changePasswordForm">
+                    @csrf
 
-                {{-- New Password --}}
-                <div class="mb-4 relative">
-                    <label for="new_password" class="block font-medium mb-1">New Password</label>
-                    <input type="password" name="new_password" id="new_password"
-                        class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
-                    <button type="button" onclick="togglePassword('new_password', this)"
-                        class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
-                </div>
+                    {{-- Current Password --}}
+                    <div class="mb-4 relative">
+                        <label for="current_password" class="block font-medium mb-1">Current Password</label>
+                        <input type="password" name="current_password" id="current_password"
+                            class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
+                        <button type="button" onclick="togglePassword('current_password', this)"
+                            class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
+                    </div>
 
-                {{-- Confirm New Password --}}
-                <div class="mb-4 relative">
-                    <label for="new_password_confirmation" class="block font-medium mb-1">Confirm New Password</label>
-                    <input type="password" name="new_password_confirmation" id="new_password_confirmation"
-                        class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
-                    <button type="button" onclick="togglePassword('new_password_confirmation', this)"
-                        class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
-                </div>
+                    {{-- New Password --}}
+                    <div class="mb-4 relative">
+                        <label for="new_password" class="block font-medium mb-1">New Password</label>
+                        <input type="password" name="new_password" id="new_password"
+                            class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
+                        <button type="button" onclick="togglePassword('new_password', this)"
+                            class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
+                    </div>
 
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                    id="updatePasswordBtn">
-                    <span id="updatePasswordText">Update Password</span>
-                    <span id="updatePasswordSpinner" class="hidden">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        Updating...
-                    </span>
-                </button>
-            </form>
+                    {{-- Confirm New Password --}}
+                    <div class="mb-4 relative">
+                        <label for="new_password_confirmation" class="block font-medium mb-1">Confirm New Password</label>
+                        <input type="password" name="new_password_confirmation" id="new_password_confirmation"
+                            class="w-full border border-gray-600 bg-gray-800 text-white px-3 py-2 rounded pr-10" required>
+                        <button type="button" onclick="togglePassword('new_password_confirmation', this)"
+                            class="absolute right-3 top-9 text-gray-400 hover:text-white">👁</button>
+                    </div>
+
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                        id="updatePasswordBtn">
+                        <span id="updatePasswordText">Update Password</span>
+                        <span id="updatePasswordSpinner" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            Updating...
+                        </span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    {{-- Toggle password visibility --}}
     <script>
+        // Toggle password form visibility
+        function togglePasswordForm() {
+            const container = document.getElementById('passwordFormContainer');
+            const arrow = document.getElementById('passwordArrow');
+
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                container.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+
+        // Toggle password visibility
         function togglePassword(fieldId, btn) {
             const input = document.getElementById(fieldId);
             if (input.type === "password") {
@@ -106,5 +138,10 @@
             btnText.classList.add('hidden');
             btnSpinner.classList.remove('hidden');
         });
+
+        // Auto-open password form if there are errors or success message
+        @if ($errors->any() || session('success'))
+            togglePasswordForm();
+        @endif
     </script>
 @endsection
