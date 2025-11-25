@@ -292,10 +292,23 @@
                     var distance = endTime{{ $election->id }} - now;
 
                     if (distance > 0) {
+                        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
                         var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                        countdownEl{{ $election->id }}.innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+
+                        var timeString = '';
+                        if (days > 0) {
+                            timeString = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+                        } else if (hours > 0) {
+                            timeString = hours + "h " + minutes + "m " + seconds + "s";
+                        } else if (minutes > 0) {
+                            timeString = minutes + "m " + seconds + "s";
+                        } else {
+                            timeString = seconds + "s";
+                        }
+
+                        countdownEl{{ $election->id }}.innerHTML = timeString;
                     } else {
                         countdownEl{{ $election->id }}.innerHTML = "Election Closed";
                         clearInterval(x{{ $election->id }});
